@@ -5,9 +5,15 @@ import { useAuth } from "@/app/context/auth";
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 
+type Website = {
+  website_id: string;
+  domain_name: string;
+  status: string;
+};
+
 export default function DashboardWebsitesPage() {
   const { user, session, loading } = useAuth();
-  const [websites, setWebsites] = useState<any[]>([]);
+  const [websites, setWebsites] = useState<Website[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,8 +71,8 @@ export default function DashboardWebsitesPage() {
           </tr>
         </thead>
         <tbody>
-          {websites?.map((site: any, idx: number) => (
-            <tr key={site.domain_name} className="bg-gray-800 rounded-lg">
+          {websites?.map((site: Website, idx: number) => (
+            <tr key={site.website_id} className="bg-gray-800 rounded-lg">
               <td className="px-4 py-2 rounded-l-lg">{idx + 1}</td>
               <td className="px-4 py-2">{site.domain_name}</td>
               <td className="px-4 py-2">

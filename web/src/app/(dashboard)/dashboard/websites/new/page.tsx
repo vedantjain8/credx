@@ -154,14 +154,14 @@ export default function AddNewWebsitePage() {
   const step2 = () => {
     return (
       <div className="space-y-6 p-8 rounded-xl shadow-lg max-w-xl mx-auto">
-        Add this code to your website's layout file to verify ownership:
+        Add this code to your website&apos;s layout file to verify ownership:
         <pre className="p-4 rounded-2xl bg-gray-400 overflow-auto">
           {`<meta name="credx-verification" content="${verificationToken}" />`}
         </pre>
         <Card className="p-4 bg-gray-800">
           <p className="text-sm text-gray-300">
-            After adding the meta tag, click the "Verify" button below. It may
-            take a few minutes for the changes to propagate.
+            After adding the meta tag, click the &quot;Verify&quot; button
+            below. It may take a few minutes for the changes to propagate.
           </p>
         </Card>
         <Button
@@ -181,44 +181,43 @@ export default function AddNewWebsitePage() {
 
   const step3 = () => {
     // verifying...
-
-    useEffect(() => {
-      let timer: NodeJS.Timeout | null = null;
-
-      if (step === 3) {
-        timer = setTimeout(async () => {
-          const response = await fetch("/api/dashboard/website/verify", {
-            method: "POST",
-            body: JSON.stringify({
-              domain: domain,
-            }),
-          });
-
-          if (response.status !== 200) {
-            setError(
-              (await response.json()).message || "Error verifying website"
-            );
-          }
-
-          if (response.status === 200) {
-            redirect("/dashboard/websites");
-          }
-        }, 5000);
-      }
-
-      return () => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      };
-    }, [step, domain, user]);
-
     return (
       <div className="space-y-6 p-8 rounded-xl shadow-lg max-w-xl mx-auto">
         Verifying...
       </div>
     );
   };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
+    if (step === 3) {
+      timer = setTimeout(async () => {
+        const response = await fetch("/api/dashboard/website/verify", {
+          method: "POST",
+          body: JSON.stringify({
+            domain: domain,
+          }),
+        });
+
+        if (response.status !== 200) {
+          setError(
+            (await response.json()).message || "Error verifying website"
+          );
+        }
+
+        if (response.status === 200) {
+          redirect("/dashboard/websites");
+        }
+      }, 5000);
+    }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [step, domain, user]);
 
   return (
     <div>

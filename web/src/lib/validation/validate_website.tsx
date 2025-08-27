@@ -17,6 +17,7 @@ export function validateRssUrl(domain: string, rssUrl: string): boolean {
     }
     return false;
   } catch (e) {
+    console.log("Error validating RSS URL:", e);
     return false; // invalid URL
   }
 }
@@ -30,6 +31,7 @@ export async function isValidRssFeed(url: string): Promise<boolean> {
 
     return text.includes("<rss") || text.includes("<feed");
   } catch (err) {
+    console.log("Error fetching RSS feed:", err);
     return false;
   }
 }

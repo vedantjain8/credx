@@ -55,8 +55,13 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ message: "verified" }, { status: 200 });
-  } catch (error: any) {
-    if (error.code === "P2025") {
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2025"
+    ) {
       // Prisma record not found
       return NextResponse.json(
         { message: "Website not found" },

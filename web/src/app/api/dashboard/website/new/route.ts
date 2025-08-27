@@ -23,8 +23,13 @@ export async function POST(request: NextRequest) {
       { verification_token: response.verification_token },
       { status: 200 }
     );
-  } catch (error: any) {
-    if (error.code === "P2002") {
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2002"
+    ) {
       // Prisma unique constraint failed
       return NextResponse.json(
         { message: "Website with this domain already exists." },
