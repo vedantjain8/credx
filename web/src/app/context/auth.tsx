@@ -70,10 +70,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
 
-      // TODO: add tag1 code to codebase
+      // Call API route to sync user record on server
+      if (data.session?.user?.id) {
+        const response = await fetch("/api/sync-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: data.session.user.id }),
+        });
 
+        if (response.status !== 200) {
+          throw new Error("Server error")
+        }
+      }
       setSession(data.session);
       setUser(data.session?.user ?? null);
+
       setLoading(false);
 
       if (error) throw error;
@@ -101,6 +112,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
       });
       setSession(data.session);
       setUser(data.session?.user ?? null);

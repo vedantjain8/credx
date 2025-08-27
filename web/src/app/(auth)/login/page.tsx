@@ -7,31 +7,28 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const { signIn, signUp, user, loading } = useAuth();
-  // TODO: use loading state to show a spinner while loading
   const [error, setError] = useState<string | null>(null);
-
   const router = useRouter();
+  // TODO: show user onloading page to select some user prefered topics to start with
 
   return (
-    <div
-      style={{
-        background: "#000",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <div className="relative min-h-screen flex items-center justify-center bg-black">
+      {/* Loading Spinner Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+            <span className="text-white text-lg">Loading...</span>
+          </div>
+        </div>
+      )}
+      {/* Main Content (blurred when loading) */}
       <form
-        style={{
-          background: "#111",
-          padding: 32,
-          borderRadius: 8,
-          boxShadow: "0 2px 8px #222",
-          minWidth: 320,
-        }}
+        className={`bg-gray-900 p-8 rounded-lg shadow-lg min-w-[320px] w-full max-w-md ${
+          loading ? "blur-sm pointer-events-none" : ""
+        }`}
       >
-        <label htmlFor="email" style={{ color: "#fff" }}>
+        <label htmlFor="email" className="block text-white mb-2">
           Email:
         </label>
         <input
@@ -39,57 +36,23 @@ export default function LoginPage() {
           name="email"
           type="email"
           required
-          style={{
-            width: "100%",
-            marginBottom: 12,
-            padding: 8,
-            borderRadius: 4,
-            border: "1px solid #333",
-            background: "#222",
-            color: "#fff",
-          }}
+          className="w-full mb-3 px-3 py-2 rounded border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <label htmlFor="password" style={{ color: "#fff" }}>
+        <label htmlFor="password" className="block text-white mb-2">
           Password:
         </label>
+        {/* TODO: add button to show/hide password */}
         <input
           id="password"
           name="password"
           type="password"
           required
-          style={{
-            width: "100%",
-            marginBottom: 12,
-            padding: 8,
-            borderRadius: 4,
-            border: "1px solid #333",
-            background: "#222",
-            color: "#fff",
-          }}
+          className="w-full mb-3 px-3 py-2 rounded border border-gray-700 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        {error && (
-          <div
-            style={{
-              color: "#ff4d4f",
-              marginBottom: 12,
-              fontSize: 14,
-            }}
-          >
-            {error}
-          </div>
-        )}
+        {error && <div className="text-red-500 mb-3 text-sm">{error}</div>}
         <button
           type="submit"
-          style={{
-            width: "100%",
-            padding: 10,
-            borderRadius: 4,
-            background: "#0070f3",
-            color: "#fff",
-            border: "none",
-            marginBottom: 8,
-            cursor: "pointer",
-          }}
+          className="w-full py-2 rounded bg-blue-600 text-white font-semibold mb-2 hover:bg-blue-700 transition-colors"
           formAction={async (formData: FormData) => {
             try {
               const email = formData.get("email") as string;
@@ -102,7 +65,6 @@ export default function LoginPage() {
               }
               setError(null);
             } catch (error) {
-              console.log(error);
               setError(error instanceof Error ? error.message : String(error));
             }
           }}
@@ -111,15 +73,7 @@ export default function LoginPage() {
         </button>
         <button
           type="submit"
-          style={{
-            width: "100%",
-            padding: 10,
-            borderRadius: 4,
-            background: "#222",
-            color: "#fff",
-            border: "1px solid #333",
-            cursor: "pointer",
-          }}
+          className="w-full py-2 rounded bg-gray-800 text-white font-semibold border border-gray-700 hover:bg-gray-700 transition-colors"
           formAction={async (formData: FormData) => {
             try {
               const email = formData.get("email") as string;
