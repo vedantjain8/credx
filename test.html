@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side-by-Side Widget Layout</title>
+
+    <!-- The verification token for your site -->
+    <meta name="site-verification" content="800926f0-2d85-4792-bd08-0f640b7e0afd">
+    
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            line-height: 1.6; 
+            padding: 2rem; 
+            background-color: #f9f9f9; 
+            color: #333; 
+        }
+
+        /* --- NEW CSS FOR SIDE-BY-SIDE LAYOUT --- */
+
+        /* 1. Create a main container that uses Flexbox */
+        .main-container {
+            display: flex;
+            gap: 2rem; /* Adds space between the content and the widget */
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* 2. Main content should take up most of the space */
+        .content-column {
+            flex: 1; /* Allows this column to grow and shrink */
+            background: #fff; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* 3. Widget column has a fixed width - made thinner */
+        .widget-column {
+            flex-basis: 280px; /* The widget will try to be this wide */
+            flex-shrink: 0; /* Prevents the widget from shrinking on smaller screens if not desired */
+        }
+        
+        /* Media query for smaller screens to stack them vertically */
+        @media (max-width: 800px) {
+            .main-container {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+
+        <div class="content-column">
+            <h3>🏆 Welcoooome to Sports Articles – Your Source for Sports News</h3>
+            <p>Welcome to <strong>Sports Articles</strong>, a blog dedicated to bringing you the latest updates, insights, and stories from the world of sports. Whether it’s football, cricket, basketball, or emerging sports, we aim to provide readers with engaging and relevant content.</p>
+            <p>This is our <em>first demo post</em>, created to test the blog’s functionality and RSS feed integration for our project. Over the coming weeks, we will share:</p>
+            <ul>
+                <li><p><strong>Match highlights</strong> – quick summaries of recent games</p></li>
+                <li><p><strong>Player spotlights</strong> – stories about athletes and their journeys</p></li>
+            </ul>
+            <p>Stay tuned as we continue to add more posts. This blog will also be used to demonstrate how content feeds (RSS/Atom) can power external applications like our <strong>CredX embeddable widget</strong>.</p>
+            
+            <h4>The Evolution of Sports Analytics</h4>
+            <p>Data has become the new frontier in sports. From tracking player performance with advanced metrics to optimizing team strategies, analytics are changing the game. We'll explore how teams are leveraging big data to gain a competitive edge.</p>
+
+            <h4>Mental Health in Professional Sports</h4>
+            <p>The conversation around mental wellness for athletes is more important than ever. This section will feature stories of resilience, the pressures of high-stakes competition, and the resources becoming available to support players' mental health.</p>
+
+        </div>
+
+        <div class="widget-column">
+             <!-- The empty div where the widget will appear -->
+            <div id="CREDX"></div>
+        </div>
+
+    </div>
+
+    <!-- The script tag for your widget -->
+    <script src="http://localhost:3000/recommendation-loader.js" defer></script>
+
+</body>
+</html>
+

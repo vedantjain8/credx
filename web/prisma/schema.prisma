@@ -332,18 +332,18 @@ model auth_users {
 
 model content_items {
   content_id      String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  website_id      String?           @db.Uuid
+  website_id      String            @db.Uuid
   title           String
   original_url    String            @unique @db.VarChar(2048)
   description     String?
-  s3_key          String?           @db.VarChar(255)
   image_url       String?           @db.VarChar(2048)
   category        String?           @default("uncategorized")
   tags            String[]
   status          content_status    @default(pending)
   created_at      DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at      DateTime?         @default(now()) @db.Timestamptz(6)
-  websites        websites?         @relation(fields: [website_id], references: [website_id], onDelete: Cascade, onUpdate: NoAction)
+  s3_path         String?           @db.VarChar(255)
+  websites        websites          @relation(fields: [website_id], references: [website_id], onDelete: Cascade, onUpdate: NoAction)
   events          events[]
   moderation_logs moderation_logs[]
   promotions      promotions[]
@@ -485,6 +485,26 @@ model websites {
   @@schema("public")
 }
 
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model oauth_clients {
+  id                 String                  @id @db.Uuid
+  client_id          String                  @unique
+  client_secret_hash String
+  registration_type  oauth_registration_type
+  redirect_uris      String
+  grant_types        String
+  client_name        String?
+  client_uri         String?
+  logo_uri           String?
+  created_at         DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime                @default(now()) @db.Timestamptz(6)
+  deleted_at         DateTime?               @db.Timestamptz(6)
+
+  @@index([client_id])
+  @@index([deleted_at])
+  @@schema("auth")
+}
+
 enum aal_level {
   aal1
   aal2
@@ -583,4 +603,11 @@ enum website_status {
   blocked
 
   @@schema("public")
+}
+
+enum oauth_registration_type {
+  dynamic
+  manual
+
+  @@schema("auth")
 }
