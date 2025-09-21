@@ -5,6 +5,9 @@ import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Ensure NLTK resources are downloaded to the current directory
 nltk_data_dir = os.path.join(os.path.dirname(__file__), 'nltk_data')
@@ -27,6 +30,7 @@ for resource in [
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
+
 def preprocess(text: str) -> str:
     """Clean and lemmatize text."""
     text = text.lower()
@@ -39,6 +43,7 @@ def preprocess(text: str) -> str:
         if w not in stop_words and len(w) > 3
     ]
     return " ".join(tokens)
+
 
 def extract_tags(title: str, content: str, top_k: int = 15):
     """Extract top-k tags using TF-IDF with lemmatization and title weighting."""
@@ -61,7 +66,9 @@ def extract_tags(title: str, content: str, top_k: int = 15):
 
     # Select top_k unique tags
     tags = [term for term, score in ranked[:top_k]]
+    logger.info(f"Extracted tags: {tags}")
     return tags
+
 
 # Example usage
 if __name__ == "__main__":

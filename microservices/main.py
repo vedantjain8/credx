@@ -10,11 +10,11 @@ from scraper.scraper_mod import ScraperMod
 load_dotenv()
 
 
-def main(article_url: str = None, verification_code: str = None, ):
+def main(article_url: str = None, verification_code: str = None, promoter_id: int = None, budget: int = None):
     """
     Main execution function.
     """
-    if not article_url or not verification_code:
+    if not article_url or not verification_code or not promoter_id or not budget:
         logging.error("Article URL and verification code must be provided.")
         return
     try:
@@ -96,11 +96,12 @@ def main(article_url: str = None, verification_code: str = None, ):
                     description,
                     filename,
                     title_image,
-                    category['label'],
+                    category,
                     tags,
                     'active'
                 )
-                query_status = execute_query(query=query, params=params)
+                query_status = execute_query(
+                    cursor=cur, query=query, params=params)
                 if (query_status != 200):
                     logging.error(
                         f"Failed to insert article metadata"
@@ -110,8 +111,9 @@ def main(article_url: str = None, verification_code: str = None, ):
                 article_id = cur.fetchone()[0]
                 logging.info(f"Inserted article with ID: {article_id}")
 
-                # TODO: calculate impressions based on money spent by the website owner
+                # TODO: calculate boost based on money spent by the website owner
                 impressions = 0
+                boost = 1.0
 
                 # create vector embeddings for the article content
                 text = f"{title} {description} {' '.join(tags)}"
@@ -130,12 +132,13 @@ def main(article_url: str = None, verification_code: str = None, ):
                         categories, 
                         promoter_id, 
                         budget,
-                        remaining_impressions,
                         boost, 
                         embedding,
+                        remaining_impressions,
                         active)
-                    VALUES (%s, %s, %s, %s, %s, %s, %.2f, %d, %.2f, %s::vector, %s)
-                """, params=(article_id, title, description, tags, emb_sql, impressions))
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s::vector, %s, %s)
+                """, params=(article_id, title, description, tags, category, promoter_id, budget, boost, emb_sql, impressions, True))
+                print(status)
                 if status != 200:
                     logging.error(
                         f"Failed to insert vector embedding into the database."
@@ -168,4 +171,7 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
     main(article_url="https://blogyworldaniket.blogspot.com/2025/08/androids-new-walls-deconstructing.html".strip(),
-         verification_code="07c988d4-7201-4b8e-be67-093be4fbe571")
+         verification_code="ef85f2ae-7b61-421d-a9e8-0c407e98e124",
+         budget=1,
+         promoter_id='01c1486c-9eb5-4ed9-aa06-2022e2c6e3ed'
+         )
