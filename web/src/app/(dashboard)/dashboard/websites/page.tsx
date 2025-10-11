@@ -1,9 +1,7 @@
 "use client";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/auth";
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
 
 type Website = {
   website_id: string;
@@ -11,15 +9,27 @@ type Website = {
   status: string;
 };
 
+type Article = {
+  content_id: string;
+  title: string;
+  category: string;
+};
+
 export default function DashboardWebsitesPage() {
   const { user, session, loading } = useAuth();
   const [websites, setWebsites] = useState<Website[]>([]);
+  const [articles, setArticles] = useState<Record<string, Article[]>>({});
+  const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(
+    null
+  );
+  const [loadingArticles, setLoadingArticles] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
     if (!user || !session) return;
-    async function fetchWebsite() {
+
+    async function fetchWebsites() {
       try {
         const res = await fetch("/api/dashboard/website", {
           method: "POST",
@@ -28,92 +38,134 @@ export default function DashboardWebsitesPage() {
             "Content-Type": "application/json",
           },
         });
-        const res1 = await res.json();
+        const data = await res.json();
         if (res.status !== 200) {
-          setError(res1.message);
+          setError(data.message);
           setWebsites([]);
           return;
         }
-        setWebsites(res1.websites);
-      } catch (error) {
-        console.log("Error fetching user websites: ", error);
+        setWebsites(data.websites);
+      } catch (err) {
+        console.error("Error fetching websites:", err);
         setWebsites([]);
       }
     }
-    fetchWebsite();
+
+    fetchWebsites();
   }, [user, session, loading]);
 
+  const fetchArticlesForWebsite = async (websiteId: string) => {
+    try {
+      setLoadingArticles(true);
+      const res = await fetch(`/api/dashboard/website/${websiteId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      setArticles((prev) => ({ ...prev, [websiteId]: data.message }));
+    } catch (err) {
+      console.error("Error fetching articles:", err);
+    } finally {
+      setLoadingArticles(false);
+      console.log(articles);
+    }
+  };
+
+  const handleWebsiteSelect = (websiteId: string) => {
+    const newSelectedId = selectedWebsiteId === websiteId ? null : websiteId;
+    setSelectedWebsiteId(newSelectedId);
+
+    if (newSelectedId && !articles[newSelectedId]) {
+      fetchArticlesForWebsite(newSelectedId);
+    }
+  };
+
   return (
-    // TODO: update the table to show dropdown for each website and an edit button to add new articles manually
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-gray-900 rounded-xl shadow-lg">
-      {error && <div className="text-red-500 mb-3 text-sm">{error}</div>}
-      {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
-            <span className="text-white text-lg">Loading...</span>
-          </div>
+    <div className="h-screen bg-background text-foreground p-6">
+      {error && <div className="text-destructive mb-3 text-sm">{error}</div>}
+      <div className="max-w-3xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-card-foreground">
+            Your Websites
+          </h2>
+          <Link href="/dashboard/websites/new">
+            <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">
+              Add New Website
+            </button>
+          </Link>
         </div>
-      )}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Your Websites</h2>
-        <Link href="/dashboard/websites/new">
-          <Button>Add New Website</Button>
-        </Link>
-      </div>
-      <table className="w-full text-left border-separate border-spacing-y-2">
-        <thead>
-          <tr className="text-gray-300">
-            <th className="px-4 py-2">#</th>
-            <th className="px-4 py-2">Domain</th>
-            <th className="px-4 py-2">Status</th>
-            <th className="px-4 py-2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {websites?.map((site: Website, idx: number) => (
-            <tr key={site.website_id} className="bg-gray-800 rounded-lg">
-              <td className="px-4 py-2 rounded-l-lg">{idx + 1}</td>
-              <td className="px-4 py-2">{site.domain_name}</td>
-              <td className="px-4 py-2">
+
+        <div className="space-y-4">
+          {websites.map((website) => (
+            <div
+              key={website.website_id}
+              className="overflow-hidden rounded-lg bg-card border border-border"
+            >
+              <button
+                onClick={() => handleWebsiteSelect(website.website_id)}
+                className="flex w-full items-center justify-between p-4 text-left"
+              >
+                <span className="font-medium text-card-foreground">
+                  {website.domain_name}
+                </span>
                 <span
-                  className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                    site.status === "active"
-                      ? "bg-green-400 shadow-[0_0_8px_2px_rgba(34,197,94,0.7)]"
-                      : site.status === "pending"
-                      ? "bg-gray-500"
-                      : site.status === "inactive"
-                      ? "bg-yellow-400 shadow-[0_0_8px_2px_rgba(250,204,21,0.7)]"
-                      : site.status === "blocked"
-                      ? "bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.7)]"
-                      : "bg-gray-500"
+                  className={`transform text-muted-foreground transition-transform duration-200 ${
+                    selectedWebsiteId === website.website_id ? "rotate-180" : ""
                   }`}
-                ></span>
-                {site.status === "active"
-                  ? "Verified"
-                  : site.status === "pending"
-                  ? "Unverified"
-                  : site.status === "inactive"
-                  ? "Inactive"
-                  : site.status === "blocked"
-                  ? "Blocked"
-                  : "Unknown"}
-              </td>
-              <td className="px-4 py-2 rounded-r-lg">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    redirect(`/dashboard/websites/${site.website_id}`);
-                  }}
                 >
-                  View
-                </Button>
-              </td>
-            </tr>
+                  ▼
+                </span>
+              </button>
+
+              {selectedWebsiteId === website.website_id && (
+                <div className="border-t border-border">
+                  {loadingArticles ? (
+                    <p className="p-4 text-muted-foreground">
+                      Loading articles...
+                    </p>
+                  ) : (
+                    <table className="min-w-full divide-y divide-border">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
+                            Title
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
+                            Category
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase text-muted-foreground">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border bg-background">
+                        {articles[website.website_id]?.map((article) => (
+                          <tr key={article.content_id}>
+                            <td className="whitespace-normal px-6 py-4 text-sm font-medium text-foreground">
+                              {article.title}
+                            </td>
+                            <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                              {article.category}
+                            </td>
+                            <td>
+                              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/80 transition-colors">
+                                Promote
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   );
 }

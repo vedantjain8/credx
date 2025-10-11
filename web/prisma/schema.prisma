@@ -346,7 +346,6 @@ model content_items {
   websites        websites          @relation(fields: [website_id], references: [website_id], onDelete: Cascade, onUpdate: NoAction)
   events          events[]
   moderation_logs moderation_logs[]
-  promotions      promotions[]
   transactions    transactions[]
 
   @@index([category], map: "idx_content_items_category")
@@ -393,18 +392,22 @@ model moderation_logs {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model promotions {
-  promotion_id  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  content_id    String?          @db.Uuid
-  budget        Decimal          @default(0.00) @db.Decimal(10, 2)
-  credits_spent Decimal          @default(0.00) @db.Decimal(10, 2)
-  status        promotion_status @default(active)
-  start_date    DateTime?        @db.Timestamptz(6)
-  end_date      DateTime?        @db.Timestamptz(6)
-  created_at    DateTime?        @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime?        @default(now()) @db.Timestamptz(6)
-  content_items content_items?   @relation(fields: [content_id], references: [content_id], onDelete: Cascade, onUpdate: NoAction)
+  id                    Int                   @id @default(autoincrement())
+  article_id            String                @db.Uuid
+  title                 String
+  summary               String
+  tags                  String[]
+  categories            String
+  promoter_id           String                @db.Uuid
+  budget                Decimal               @db.Decimal
+  remaining_impressions Int?                  @default(0)
+  boost                 Decimal?              @default(1.0) @db.Decimal
+  embedding             Unsupported("vector")
+  active                Boolean?              @default(true)
+  created_at            DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?             @default(now()) @db.Timestamptz(6)
 
-  @@index([content_id], map: "idx_promotions_content_id")
+  @@index([embedding])
   @@schema("public")
 }
 

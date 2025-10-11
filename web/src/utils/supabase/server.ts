@@ -1,9 +1,8 @@
-import { createServerClient } from '@supabase/ssr'
-import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
-import { cookies } from 'next/headers'
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export async function createClient(cookieStore: Promise<ReadonlyRequestCookies> ) {
-  const cookieStores = await cookies()
+export async function createClient() {
+  const cookieStore = cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,13 +10,14 @@ export async function createClient(cookieStore: Promise<ReadonlyRequestCookies> 
     {
       cookies: {
         async getAll() {
-          return (await cookieStore).getAll()
+          const resolvedCookies = await cookieStore;
+          return resolvedCookies.getAll();
         },
-        setAll(cookiesToSet) {
+        async setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(async ({ name, value, options }) =>
-              (await cookieStore).set(name, value, options)
-            )
+            for (const { name, value, options } of cookiesToSet) {
+              (await cookieStore).set(name, value, options);
+            }
           } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
@@ -26,5 +26,5 @@ export async function createClient(cookieStore: Promise<ReadonlyRequestCookies> 
         },
       },
     }
-  )
+  );
 }
