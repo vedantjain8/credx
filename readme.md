@@ -10,6 +10,7 @@ coding in progress
 git clone https://github.com/vedantjain8/credx.git
 cd credx/web
 npm install
+npx prisma db pull
 npx prisma generate
 npm run dev
 ```

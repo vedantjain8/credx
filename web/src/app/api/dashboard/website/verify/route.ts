@@ -3,10 +3,11 @@ import * as cheerio from "cheerio";
 import { PrismaClient } from "@/generated/prisma";
 import { createClient } from "@/utils/supabase/server";
 
+
 export async function POST(request: NextRequest) {
   try {
     const prisma = new PrismaClient();
-    const supabase = createClient();
+    const supabase =  createClient();
     const body = await request.json();
     const domain = body.domain;
     const userSessionToken = request.headers

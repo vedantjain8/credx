@@ -15,19 +15,19 @@ import { useAuth } from "@/app/context/auth";
 
 const navItems = [
   {
-    label: "Dashboard",
-    links: [
-      { label: "Dashboard", href: "/dashboard" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Features", href: "/features" },
-    ],
-  },
-  {
     label: "Company",
     links: [
       { label: "About", href: "/about" },
       { label: "Careers", href: "/careers" },
       { label: "Contact", href: "/contact" },
+    ],
+  },
+  {
+    label: "Dashboard",
+    links: [
+      { label: "Dashboard", href: "/dashboard" },
+      { label: "Pricing", href: "#" },
+      { label: "Features", href: "#" },
     ],
   },
   {
@@ -51,11 +51,14 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="w-full h-16 flex items-center justify-between px-6 bg-gray-950 border-b border-gray-800">
+    <nav className="w-full h-16 flex items-center justify-between px-6 bg-sidebar border-b border-sidebar-border">
       {/* Left: Brand */}
       <div className="flex items-center gap-2">
-        <Link href="/" className="text-xl font-bold text-white tracking-tight">
-          credx
+        <Link
+          href="/"
+          className="text-xl font-bold text-sidebar-foreground tracking-tight"
+        >
+          CREDX
         </Link>
       </div>
       {/* Center: Dropdowns */}
@@ -65,7 +68,7 @@ export default function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="text-white text-base font-medium px-4 py-2 hover:bg-gray-900 focus:bg-gray-900"
+                className="text-sidebar-foreground text-base font-medium px-4 py-2 hover:bg-sidebar-accent focus:bg-sidebar-accent"
                 onMouseEnter={() => setHoveredIndex(idx)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
@@ -73,15 +76,15 @@ export default function Navbar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="bg-gray-900 border-gray-800"
+              className="bg-sidebar border-sidebar-border"
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
               {item.links.map((link) => (
-                <DropdownMenuItem key={link.href} asChild>
+                <DropdownMenuItem key={link.label} asChild>
                   <Link
                     href={link.href}
-                    className="w-full block px-2 py-1 text-gray-200 hover:text-white hover:bg-gray-800 rounded"
+                    className="w-full block px-2 py-1 text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent rounded"
                   >
                     {link.label}
                   </Link>
@@ -106,29 +109,24 @@ export default function Navbar() {
         {user === null ? (
           <div>
             <Link href="/login">
-              <Button variant="ghost" className="text-white">
-                Login
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-blue-600 text-white hover:bg-blue-700">
-                Sign Up
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                Join Now
               </Button>
             </Link>
           </div>
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="cursor-pointer border border-gray-700">
+              <Avatar className="cursor-pointer border border-sidebar-border">
                 <AvatarImage src="/avatar.png" alt="profile" />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-gray-900 border-gray-800 min-w-[160px]">
+            <DropdownMenuContent className="bg-sidebar border-sidebar-border min-w-[160px]">
               <DropdownMenuItem asChild>
                 <Link
                   href="/profile"
-                  className="block px-2 py-1 text-gray-200 hover:text-white hover:bg-gray-800 rounded"
+                  className="block px-2 py-1 text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent rounded"
                 >
                   Profile
                 </Link>
@@ -136,7 +134,7 @@ export default function Navbar() {
               <DropdownMenuItem asChild>
                 <Link
                   href="/settings"
-                  className="block px-2 py-1 text-gray-200 hover:text-white hover:bg-gray-800 rounded"
+                  className="block px-2 py-1 text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent rounded"
                 >
                   Settings
                 </Link>
@@ -144,7 +142,7 @@ export default function Navbar() {
               <DropdownMenuItem asChild>
                 <Link
                   href="/logout"
-                  className="block px-2 py-1 text-red-400 hover:text-red-600 hover:bg-gray-800 rounded"
+                  className="block px-2 py-1 text-destructive hover:text-destructive hover:bg-destructive/10 rounded"
                 >
                   Logout
                 </Link>
