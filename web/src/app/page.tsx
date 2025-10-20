@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "./context/auth";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import PageLoadSpinner from "./loading";
 
 export default function Home() {
@@ -224,7 +224,13 @@ export default function Home() {
           <p className="text-xl mb-8">
             Join thousands of promoters and readers in our growing network.
           </p>
-          <button className="bg-primary-foreground text-primary px-10 py-4 rounded-lg font-semibold hover:bg-primary-foreground/90 transition-all duration-300 transform hover:scale-105">
+
+          <button
+            onClick={() => {
+              redirect("/login");
+            }}
+            className="bg-primary-foreground text-primary px-10 py-4 rounded-lg font-semibold hover:bg-primary-foreground/90 transition-all duration-300 transform hover:scale-105"
+          >
             Sign Up Now
           </button>
         </div>

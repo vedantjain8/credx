@@ -46,7 +46,7 @@ def close_connection(connection):
         logger.info("Connection closed.")
 
 
-def execute_query(cursor, query, params, fetch=False) -> int:
+def execute_query(cursor, query, params, fetch=False) -> any:
     """
     Executes a given SQL query using the provided database cursor.
 

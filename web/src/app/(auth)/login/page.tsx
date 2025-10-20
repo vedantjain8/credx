@@ -3,18 +3,18 @@
 import { useAuth } from "@/app/context/auth";
 import { useEffect, useState } from "react";
 import { ValidateEmail, ValidatePassword } from "@/lib/validation/auth";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
   const { signIn, signUp, user, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   // TODO: show user onboarding page to select some user prefered topics to start with
 
   useEffect(() => {
-    if (user) router.push("/dashboard");
-  }, []);
+    if (user) redirect("/dashboard");
+  }, [user]);
+
   return (
     <div className="relative min-h-screen flex items-center justify-center">
       {/* Loading Spinner Overlay */}
@@ -62,13 +62,17 @@ export default function LoginPage() {
               const password = formData.get("password") as string;
               ValidateEmail(email);
               ValidatePassword(password);
-              signIn(email, password).then(() => {
+              try {
+                await signIn(email, password);
                 if (user) {
                   setError(null);
-                  router.push("/dashboard");
-                  router.refresh();
+                  redirect("/dashboard");
                 }
-              });
+              } catch (error) {
+                setError(
+                  error instanceof Error ? error.message : String(error)
+                );
+              }
             } catch (error) {
               setError(error instanceof Error ? error.message : String(error));
             }
@@ -84,9 +88,16 @@ export default function LoginPage() {
               const email = formData.get("email") as string;
               const password = formData.get("password") as string;
               ValidatePassword(password);
-              await signUp(email, password);
+              try {
+                await signUp(email, password);
+              } catch (error) {
+                setError(
+                  error instanceof Error ? error.message : String(error)
+                );
+                return;
+              }
               if (user) {
-                router.push("/dashboard");
+                redirect("/dashboard");
               }
               setError(null);
             } catch (error) {

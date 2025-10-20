@@ -14,11 +14,7 @@ import { useAuth } from "@/app/context/auth";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { redirect } from "next/navigation";
-import {
-  isValidRssFeed,
-  validateDomain,
-  validateRssUrl,
-} from "@/lib/validation/validate_website";
+import { validateDomain } from "@/lib/validation/validate_website";
 
 export default function AddNewWebsitePage() {
   const { user, session } = useAuth();
@@ -31,13 +27,11 @@ export default function AddNewWebsitePage() {
 
   type FormValues = {
     domain_name: string;
-    rss_feed_url: string;
   };
 
   const form = useForm<FormValues>({
     defaultValues: {
       domain_name: "",
-      rss_feed_url: "",
     },
   });
 
@@ -48,7 +42,7 @@ export default function AddNewWebsitePage() {
           <form
             onSubmit={form.handleSubmit(async (data) => {
               if (!user) redirect("/login");
-              if (!data.domain_name || !data.rss_feed_url) {
+              if (!data.domain_name) {
                 setError("Invalid data");
                 return;
               }
@@ -63,17 +57,6 @@ export default function AddNewWebsitePage() {
                 return;
               }
 
-              if (!validateRssUrl(data.domain_name, data.rss_feed_url)) {
-                setError("Invalid RSS feed URL");
-                return;
-              }
-
-              const isValidRss = await isValidRssFeed(data.rss_feed_url);
-              if (!isValidRss) {
-                setError("RSS feed URL does not point to a valid RSS feed");
-                return;
-              }
-
               const verificationToken = await fetch(
                 "/api/dashboard/website/new",
                 {
@@ -84,7 +67,6 @@ export default function AddNewWebsitePage() {
                   },
                   body: JSON.stringify({
                     domain_name: data.domain_name,
-                    rss_feed_url: data.rss_feed_url,
                     owner_id: user.id,
                   }),
                 }
@@ -121,22 +103,6 @@ export default function AddNewWebsitePage() {
                   <FormLabel>Domain Name</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="e.g. example.com" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="rss_feed_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>RSS Feed URL</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="e.g. https://example.com/feed.xml"
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

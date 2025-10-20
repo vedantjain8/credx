@@ -3,35 +3,35 @@ export function validateDomain(domain: string): boolean {
   return domainRegex.test(domain);
 }
 
-export function validateRssUrl(domain: string, rssUrl: string): boolean {
-  try {
-    const domainObj = new URL(domain);
-    const rssObj = new URL(rssUrl);
+// export function validateRssUrl(domain: string, rssUrl: string): boolean {
+//   try {
+//     const domainObj = new URL(domain);
+//     const rssObj = new URL(rssUrl);
 
-    // must start with the domain
-    if (
-      rssObj.hostname === domainObj.hostname &&
-      rssObj.protocol === "https:"
-    ) {
-      return true;
-    }
-    return false;
-  } catch (e) {
-    console.log("Error validating RSS URL:", e);
-    return false; // invalid URL
-  }
-}
+//     // must start with the domain
+//     if (
+//       rssObj.hostname === domainObj.hostname &&
+//       rssObj.protocol === "https:"
+//     ) {
+//       return true;
+//     }
+//     return false;
+//   } catch (e) {
+//     console.log("Error validating RSS URL:", e);
+//     return false; // invalid URL
+//   }
+// }
 
-export async function isValidRssFeed(url: string): Promise<boolean> {
-  try {
-    const res = await fetch(url, { method: "GET" });
-    if (!res.ok) return false;
+// export async function isValidRssFeed(url: string): Promise<boolean> {
+//   try {
+//     const res = await fetch(url, { method: "GET" });
+//     if (!res.ok) return false;
 
-    const text = await res.text();
+//     const text = await res.text();
 
-    return text.includes("<rss") || text.includes("<feed");
-  } catch (err) {
-    console.log("Error fetching RSS feed:", err);
-    return false;
-  }
-}
+//     return text.includes("<rss") || text.includes("<feed");
+//   } catch (err) {
+//     console.log("Error fetching RSS feed:", err);
+//     return false;
+//   }
+// }

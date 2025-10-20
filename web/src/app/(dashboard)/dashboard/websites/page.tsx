@@ -1,7 +1,17 @@
+// TODO: test this page functionality
 "use client";
 import Link from "next/link";
 import { useAuth } from "@/app/context/auth";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"; // Import dialog components
 
 type Website = {
   website_id: string;
@@ -15,15 +25,25 @@ type Article = {
   category: string;
 };
 
+type QueueItemType = {
+  website_id: string;
+  article_url: string;
+  budget: number;
+};
+
 export default function DashboardWebsitesPage() {
   const { user, session, loading } = useAuth();
   const [websites, setWebsites] = useState<Website[]>([]);
   const [articles, setArticles] = useState<Record<string, Article[]>>({});
+  const [article_url, setArticleUrl] = useState<string>("");
+  const [budgetValue, setBudgetValue] = useState<number>(0);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(
     null
   );
+  const [sendData, setSendData] = useState<QueueItemType | null>(null);
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDialog, setShowDialog] = useState(false); // State for dialog visibility
 
   useEffect(() => {
     if (loading) return;
@@ -83,6 +103,36 @@ export default function DashboardWebsitesPage() {
     }
   };
 
+  async function addNewArticle(
+    website_id: string,
+    article_url: string,
+    budget: number
+  ) {
+    if (!website_id || !article_url) {
+      setError("Article URL cannot be empty.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/bloc/queue", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify(sendData),
+      }).then((res) => {
+        if (res.status === 200) {
+          fetchArticlesForWebsite(website_id);
+          setShowDialog(true); // Show dialog on success
+        }
+        return res.json();
+      });
+    } catch (error) {
+      console.error("Error adding new article:", error);
+    }
+  }
+
   return (
     <div className="h-screen bg-background text-foreground p-6">
       {error && <div className="text-destructive mb-3 text-sm">{error}</div>}
@@ -92,9 +142,9 @@ export default function DashboardWebsitesPage() {
             Your Websites
           </h2>
           <Link href="/dashboard/websites/new">
-            <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">
+            <Button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">
               Add New Website
-            </button>
+            </Button>
           </Link>
         </div>
 
@@ -122,6 +172,28 @@ export default function DashboardWebsitesPage() {
 
               {selectedWebsiteId === website.website_id && (
                 <div className="border-t border-border">
+                  <div className="flex justify-between items-end p-4">
+                    <Input
+                      placeholder="Article URL..."
+                      className="mr-4"
+                      value={article_url}
+                      onChange={(e) => setArticleUrl(e.target.value)}
+                    ></Input>
+                    <Button
+                      className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/80 transition-colors"
+                      onClick={() => {
+                        setError(null); // Clear previous error
+                        setSendData({
+                          website_id: website.website_id,
+                          article_url,
+                          budget: budgetValue || 0,
+                        });
+                        setShowDialog(true); // Show dialog on success
+                      }}
+                    >
+                      Add new article
+                    </Button>
+                  </div>
                   {loadingArticles ? (
                     <p className="p-4 text-muted-foreground">
                       Loading articles...
@@ -151,9 +223,12 @@ export default function DashboardWebsitesPage() {
                               {article.category}
                             </td>
                             <td>
-                              <button className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/80 transition-colors">
+                              <Button
+                                onClick={() => setShowDialog(true)}
+                                className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/80 transition-colors"
+                              >
                                 Promote
-                              </button>
+                              </Button>
                             </td>
                           </tr>
                         ))}
@@ -166,6 +241,40 @@ export default function DashboardWebsitesPage() {
           ))}
         </div>
       </div>
+
+      {/* Dialog for article promotion budget */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Promote Article</DialogTitle>
+          </DialogHeader>
+          <p>Enter a budget value to promote your article.</p>
+          <div className="mt-4">
+            <Input
+              placeholder="Enter budget value..."
+              type="number"
+              className="w-full"
+              onChange={(e) => setBudgetValue(Number.parseInt(e.target.value))}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+              onClick={() => {
+                addNewArticle(
+                  sendData!.website_id,
+                  sendData!.article_url,
+                  budgetValue
+                );
+                setShowDialog(false);
+              }}
+            >
+              Submit Budget
+            </Button>
+            <Button onClick={() => setShowDialog(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -125,7 +125,7 @@ export default function Navbar() {
             <DropdownMenuContent className="bg-sidebar border-sidebar-border min-w-[160px]">
               <DropdownMenuItem asChild>
                 <Link
-                  href="/profile"
+                  href="/user/profile"
                   className="block px-2 py-1 text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent rounded"
                 >
                   Profile

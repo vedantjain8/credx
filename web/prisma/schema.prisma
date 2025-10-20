@@ -398,7 +398,6 @@ model promotions {
   summary               String
   tags                  String[]
   categories            String
-  promoter_id           String                @db.Uuid
   budget                Decimal               @db.Decimal
   remaining_impressions Int?                  @default(0)
   boost                 Decimal?              @default(1.0) @db.Decimal

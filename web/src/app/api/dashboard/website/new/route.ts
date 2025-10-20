@@ -6,12 +6,11 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { domain_name, rss_feed_url, owner_id } = body;
+    const { domain_name, owner_id } = body;
 
     const response = await prisma.websites.create({
       data: {
         domain_name,
-        rss_feed_url,
         owner_id,
         verification_token_expires_at: new Date(
           Date.now() + 365 * 24 * 60 * 60 * 1000

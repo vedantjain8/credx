@@ -70,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
 
+      if (error) throw error;
+
       // Call API route to sync user record on server
       if (data.session?.user?.id) {
         const response = await fetch("/api/sync-user", {
@@ -79,15 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         if (response.status !== 200) {
-          throw new Error("Server error")
+          throw new Error("Server error");
         }
       }
       setSession(data.session);
       setUser(data.session?.user ?? null);
 
       setLoading(false);
-
-      if (error) throw error;
     } catch (error) {
       setLoading(false);
       throw error;
