@@ -69,7 +69,7 @@ def execute_query(cursor, query, params, fetch=False) -> any:
         if params:
             cursor.execute(query, params)
             if fetch:
-                result = cursor.fetchone()
+                result = cursor.fetchall()
                 return result
         else:
             cursor.execute(query)
