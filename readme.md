@@ -6,11 +6,20 @@ coding in progress
 
 
 # Contributing
+Follow below steps to setup development environment:
 ```bash
 git clone https://github.com/vedantjain8/credx.git
 cd credx/web
+# -- Rename .env.example to .env --
+# -- Edit .env file to add required credentials --
 npm install
+npm run migrate up
 npx prisma db pull
 npx prisma generate
 npm run dev
+
+cd ../microservices
+# -- Rename .env.example to .env --
+# -- Edit .env file to add required credentials --
+pip install -r requirements.txt
 ```

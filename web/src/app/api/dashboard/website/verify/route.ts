@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.websites.update({
       where: { domain_name: domain, owner_id: user.id },
-      data: { status: "inactive", verified_at: new Date() },
+      data: { status: "active", verified_at: new Date() },
     });
 
     return NextResponse.json({ message: "verified" }, { status: 200 });

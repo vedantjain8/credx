@@ -1,4 +1,3 @@
-// TODO: test this page functionality
 "use client";
 import Link from "next/link";
 import { useAuth } from "@/app/context/auth";
@@ -11,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"; // Import dialog components
+} from "@/components/ui/dialog"; 
 
 type Website = {
   website_id: string;
@@ -29,6 +28,7 @@ type QueueItemType = {
   website_id: string;
   article_url: string;
   budget: number;
+  promoter_id: string;
 };
 
 export default function DashboardWebsitesPage() {
@@ -43,7 +43,7 @@ export default function DashboardWebsitesPage() {
   const [sendData, setSendData] = useState<QueueItemType | null>(null);
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDialog, setShowDialog] = useState(false); // State for dialog visibility
+  const [showDialog, setShowDialog] = useState(false); 
 
   useEffect(() => {
     if (loading) return;
@@ -52,7 +52,7 @@ export default function DashboardWebsitesPage() {
     async function fetchWebsites() {
       try {
         const res = await fetch("/api/dashboard/website", {
-          method: "POST",
+          method: "GET",
           headers: {
             Authorization: `Bearer ${session?.access_token}`,
             "Content-Type": "application/json",
@@ -124,10 +124,17 @@ export default function DashboardWebsitesPage() {
       }).then((res) => {
         if (res.status === 200) {
           fetchArticlesForWebsite(website_id);
-          setShowDialog(true); // Show dialog on success
+          setShowDialog(true);
         }
         return res.json();
       });
+      if (res.status !== 200) {
+        setError(res.message || "Failed to add article to queue.");
+      } else {
+        alert(
+          "Article successfully added to the promotion queue. Check back later for results."
+        );
+      }
     } catch (error) {
       console.error("Error adding new article:", error);
     }
@@ -154,7 +161,7 @@ export default function DashboardWebsitesPage() {
               key={website.website_id}
               className="overflow-hidden rounded-lg bg-card border border-border"
             >
-              <button
+              <Button
                 onClick={() => handleWebsiteSelect(website.website_id)}
                 className="flex w-full items-center justify-between p-4 text-left"
               >
@@ -168,7 +175,7 @@ export default function DashboardWebsitesPage() {
                 >
                   ▼
                 </span>
-              </button>
+              </Button>
 
               {selectedWebsiteId === website.website_id && (
                 <div className="border-t border-border">
@@ -182,13 +189,14 @@ export default function DashboardWebsitesPage() {
                     <Button
                       className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/80 transition-colors"
                       onClick={() => {
-                        setError(null); // Clear previous error
+                        setError(null); 
                         setSendData({
                           website_id: website.website_id,
                           article_url,
                           budget: budgetValue || 0,
+                          promoter_id: user!.id,
                         });
-                        setShowDialog(true); // Show dialog on success
+                        setShowDialog(true);
                       }}
                     >
                       Add new article

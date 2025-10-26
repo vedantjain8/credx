@@ -2,12 +2,14 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "migrate": "node-pg-migrate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -39,6 +41,7 @@
     "next": "15.4.6",
     "next-sitemap": "^4.2.3",
     "next-themes": "^0.4.6",
+    "node-pg-migrate": "^8.0.3",
     "prisma": "^6.14.0",
     "react": "^19.1.0",
     "react-dom": "19.1.0",

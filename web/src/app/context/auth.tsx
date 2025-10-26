@@ -72,18 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
-      // Call API route to sync user record on server
-      if (data.session?.user?.id) {
-        const response = await fetch("/api/sync-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: data.session.user.id }),
-        });
-
-        if (response.status !== 200) {
-          throw new Error("Server error");
-        }
-      }
       setSession(data.session);
       setUser(data.session?.user ?? null);
 
@@ -113,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: `${window.location.origin}/auth/confirm/otp`,
         },
       });
       setSession(data.session);

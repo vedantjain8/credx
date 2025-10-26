@@ -4,20 +4,21 @@ type QueueItemType = {
   website_id: string;
   article_url: string;
   budget: number;
+  promoter_id: string;
 };
 
 const queue = [] as Array<QueueItemType>;
 
 export async function POST(request: NextRequest) {
   // add item to queue
-  const { website_id, article_url, budget } = await request.json();
-  if (!website_id || !article_url || !budget) {
+  const { website_id, article_url, budget, promoter_id } = await request.json();
+  if (!website_id || !article_url || !budget || !promoter_id) {
     return new NextResponse(JSON.stringify({ message: "Missing parameters" }), {
       status: 400,
     });
   }
 
-  queue.push({ website_id, article_url, budget });
+  queue.push({ website_id, article_url, budget, promoter_id });
   return NextResponse.json({ message: "Item added to queue" }, { status: 200 });
 }
 

@@ -45,6 +45,7 @@
   async function fetchRecommendation() {
     try {
       //CALL THIS FUNCTION TO GET VIS_ID FROM THE COOKIE. TEMPORARILY USING MOCK DATA getOrSetVisitorId();
+      // TODO: change this to use real visitor ID
       const userId = '01c1486c-9eb5-4ed9-aa06-2022e2c6e3ed'
 
       const response = await fetch(`${API_BASE_URL}/api/widget`, {
