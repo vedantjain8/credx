@@ -3,8 +3,9 @@
 
 import { useAuth } from "@/app/context/auth";
 import React, { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-// Define the shape of our data with TypeScript types
 type Website = {
   website_id: string;
   domain_name: string;
@@ -30,7 +31,7 @@ export default function PromotionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<Article | null>(null);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(
-    null
+    null,
   );
 
   const [websites, setWebsites] = useState<Website[]>([]);
@@ -46,7 +47,7 @@ export default function PromotionsPage() {
 
       const response = await fetch(
         `/api/dashboard/articles?websiteId=${websiteId}`,
-        {}
+        { method: "GET" },
       );
       if (!response.ok) throw new Error("Failed to fetch articles.");
       const data = await response.json();
@@ -55,7 +56,7 @@ export default function PromotionsPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "An error occurred fetching articles"
+          : "An error occurred fetching articles",
       );
     } finally {
       setLoadingArticles(false);
@@ -73,7 +74,7 @@ export default function PromotionsPage() {
   };
 
   const handlePromotionSubmit = async (
-    event: React.FormEvent<HTMLFormElement>
+    event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
     if (!selectedContent || !selectedWebsiteId) return;
@@ -114,7 +115,7 @@ export default function PromotionsPage() {
       }
       try {
         setLoadingWebsites(true);
-        const response = await fetch("/api/websites");
+        const response = await fetch("/api/dashboard/website");
         if (!response.ok) throw new Error("Failed to fetch websites.");
         const data = await response.json();
         setWebsites(data);
@@ -178,7 +179,7 @@ export default function PromotionsPage() {
                 key={website.website_id}
                 className="overflow-hidden rounded-lg bg-background border border-border"
               >
-                <button
+                <Button
                   onClick={() => handleWebsiteSelect(website.website_id)}
                   className="flex w-full items-center justify-between p-4 text-left"
                 >
@@ -194,7 +195,7 @@ export default function PromotionsPage() {
                   >
                     ▼
                   </span>
-                </button>
+                </Button>
 
                 {selectedWebsiteId === website.website_id && (
                   <div className="border-t border-border">
@@ -241,8 +242,8 @@ export default function PromotionsPage() {
                                       status === "active"
                                         ? "bg-primary/20 text-primary"
                                         : status === "completed"
-                                        ? "bg-muted text-muted-foreground"
-                                        : "bg-accent/20 text-accent-foreground"
+                                          ? "bg-muted text-muted-foreground"
+                                          : "bg-accent/20 text-accent-foreground"
                                     }`}
                                   >
                                     {status.replace("_", " ").toUpperCase()}
@@ -254,12 +255,12 @@ export default function PromotionsPage() {
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                   {status === "not_promoted" && (
-                                    <button
+                                    <Button
                                       onClick={() => handlePromoteClick(item)}
                                       className="text-primary hover:text-primary/80"
                                     >
                                       Promote
-                                    </button>
+                                    </Button>
                                   )}
                                 </td>
                               </tr>
@@ -296,7 +297,7 @@ export default function PromotionsPage() {
                   Budget (in Credits)
                 </label>
                 <div className="mt-1">
-                  <input
+                  <Input
                     type="number"
                     name="budget"
                     id="budget"
@@ -308,19 +309,19 @@ export default function PromotionsPage() {
                 </div>
               </div>
               <div className="mt-6 flex justify-end space-x-4">
-                <button
+                <Button
                   type="button"
                   onClick={handleCloseModal}
                   className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   className="rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                   Start Promotion
-                </button>
+                </Button>
               </div>
             </form>
           </div>

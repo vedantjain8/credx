@@ -1,37 +1,40 @@
-(function() {
-  
-  
-  
-  const API_BASE_URL = 'http://localhost:3000';
+(function () {
+  const API_BASE_URL = "http://localhost:3000";
 
   // Find the container element on the host's page
-  const widgetContainer = document.getElementById('CREDX');
+  const widgetContainer = document.getElementById("CREDX");
   if (!widgetContainer) {
     // fail silently if the container isn't there.
     return;
   }
 
   // Get verification token from the head meta tag.
-  const verificationMetaTag = document.querySelector('meta[name="site-verification"]');
+  const verificationMetaTag = document.querySelector(
+    'meta[name="site-verification"]',
+  );
   if (!verificationMetaTag) {
-    console.error("AI Widget: Verification meta tag 'site-verification' not found in <head>.");
+    console.error(
+      "AI Widget: Verification meta tag 'site-verification' not found in <head>.",
+    );
     return;
   }
-  const verificationToken = verificationMetaTag.getAttribute('content');
-   if (!verificationToken) {
-    console.error("AI Widget: Verification meta tag is missing the 'content' attribute.");
+  const verificationToken = verificationMetaTag.getAttribute("content");
+  if (!verificationToken) {
+    console.error(
+      "AI Widget: Verification meta tag is missing the 'content' attribute.",
+    );
     return;
   }
 
-  // Visitor ID Management 
+  // Visitor ID Management
   function getOrSetVisitorId() {
-    const cookieName = 'credx_visitor_id=';
-    const cookies = document.cookie.split(';');
+    const cookieName = "credx_visitor_id=";
+    const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
-        let cookie = cookies[i].trim();
-        if (cookie.startsWith(cookieName)) {
-            return cookie.substring(cookieName.length, cookie.length);
-        }
+      let cookie = cookies[i].trim();
+      if (cookie.startsWith(cookieName)) {
+        return cookie.substring(cookieName.length, cookie.length);
+      }
     }
     // If not found, generate a new UUID, set it in a cookie, and return it.
     const newVisitorId = crypto.randomUUID();
@@ -41,21 +44,20 @@
     return newVisitorId;
   }
 
-  
   async function fetchRecommendation() {
     try {
       //CALL THIS FUNCTION TO GET VIS_ID FROM THE COOKIE. TEMPORARILY USING MOCK DATA getOrSetVisitorId();
       // TODO: change this to use real visitor ID
-      const userId = '01c1486c-9eb5-4ed9-aa06-2022e2c6e3ed'
+      const userId = "01c1486c-9eb5-4ed9-aa06-2022e2c6e3ed";
 
       const response = await fetch(`${API_BASE_URL}/api/widget`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ verificationToken, userId })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verificationToken, userId }),
       });
 
-      if (response.status === 204) { 
-        return null; 
+      if (response.status === 204) {
+        return null;
       }
       if (!response.ok) {
         const errorData = await response.json();
@@ -63,23 +65,22 @@
       }
 
       const article = await response.json();
-      
+
       if (article) {
         renderWidget(article);
       } else {
         widgetContainer.style.display = error;
       }
-
     } catch (error) {
-      console.error('AI Widget: Failed to fetch recommendation:', error);
-      widgetContainer.style.display = error; 
+      console.error("AI Widget: Failed to fetch recommendation:", error);
+      widgetContainer.style.display = error;
     }
   }
 
   function renderWidget(article) {
     // Create a Shadow DOM to encapsulate the widget's styles
-    const shadowRoot = widgetContainer.attachShadow({ mode: 'open' });
-    
+    const shadowRoot = widgetContainer.attachShadow({ mode: "open" });
+
     const widgetHTML = `
       <style>
         /* Using the same modern, dark theme styles */
@@ -150,13 +151,10 @@
     shadowRoot.innerHTML = widgetHTML;
   }
 
-
   // Run script after the DOM is done
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fetchRecommendation);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", fetchRecommendation);
   } else {
     fetchRecommendation();
   }
-
 })();
-

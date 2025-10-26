@@ -17,7 +17,7 @@ export default function LogoutPage() {
   });
   return (
     <div>
-      <h1>Hate to see you leaving...</h1>
+      <h1 className="h-max">Hate to see you leaving...</h1>
     </div>
   );
 }

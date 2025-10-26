@@ -9,7 +9,7 @@ type Website = {
 };
 
 export default async function GetUserWebsites(
-  user_id: string | null
+  user_id: string | null,
 ): Promise<Website[]> {
   if (!user_id) {
     throw new Error("User not logged in");

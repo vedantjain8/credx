@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"; 
+} from "@/components/ui/dialog";
 
 type Website = {
   website_id: string;
@@ -38,12 +38,12 @@ export default function DashboardWebsitesPage() {
   const [article_url, setArticleUrl] = useState<string>("");
   const [budgetValue, setBudgetValue] = useState<number>(0);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(
-    null
+    null,
   );
   const [sendData, setSendData] = useState<QueueItemType | null>(null);
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDialog, setShowDialog] = useState(false); 
+  const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -106,7 +106,7 @@ export default function DashboardWebsitesPage() {
   async function addNewArticle(
     website_id: string,
     article_url: string,
-    budget: number
+    budget: number,
   ) {
     if (!website_id || !article_url) {
       setError("Article URL cannot be empty.");
@@ -132,7 +132,7 @@ export default function DashboardWebsitesPage() {
         setError(res.message || "Failed to add article to queue.");
       } else {
         alert(
-          "Article successfully added to the promotion queue. Check back later for results."
+          "Article successfully added to the promotion queue. Check back later for results.",
         );
       }
     } catch (error) {
@@ -189,7 +189,7 @@ export default function DashboardWebsitesPage() {
                     <Button
                       className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/80 transition-colors"
                       onClick={() => {
-                        setError(null); 
+                        setError(null);
                         setSendData({
                           website_id: website.website_id,
                           article_url,
@@ -272,7 +272,7 @@ export default function DashboardWebsitesPage() {
                 addNewArticle(
                   sendData!.website_id,
                   sendData!.article_url,
-                  budgetValue
+                  budgetValue,
                 );
                 setShowDialog(false);
               }}

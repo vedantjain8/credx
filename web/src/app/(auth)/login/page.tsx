@@ -4,12 +4,14 @@ import { useAuth } from "@/app/context/auth";
 import { useEffect, useState } from "react";
 import { ValidateEmail, ValidatePassword } from "@/lib/validation/auth";
 import { redirect } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function LoginPage() {
   const { signIn, signUp, user, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  // TODO: show user onboarding page to select some user prefered topics to start with
 
   useEffect(() => {
     if (user) redirect("/dashboard");
@@ -31,21 +33,21 @@ export default function LoginPage() {
           loading ? "blur-sm pointer-events-none" : ""
         }`}
       >
-        <label htmlFor="email" className="block text-card-foreground mb-2">
+        <Label htmlFor="email" className="block text-card-foreground mb-2">
           Email:
-        </label>
-        <input
+        </Label>
+        <Input
           id="email"
           name="email"
           type="email"
           required
           className="w-full mb-3 px-3 py-2 rounded border border-border bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        <label htmlFor="password" className="block text-card-foreground mb-2">
+        <br></br>
+        <Label htmlFor="password" className="block text-card-foreground mb-2">
           Password:
-        </label>
-        {/* TODO: add button to show/hide password */}
-        <input
+        </Label>
+        <Input
           id="password"
           name="password"
           type="password"
@@ -53,7 +55,7 @@ export default function LoginPage() {
           className="w-full mb-3 px-3 py-2 rounded border border-border bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
         {error && <div className="text-destructive mb-3 text-sm">{error}</div>}
-        <button
+        <Button
           type="submit"
           className="w-full py-2 rounded bg-primary text-primary-foreground font-semibold mb-2 hover:bg-primary/90 transition-colors"
           formAction={async (formData: FormData) => {
@@ -70,7 +72,7 @@ export default function LoginPage() {
                 }
               } catch (error) {
                 setError(
-                  error instanceof Error ? error.message : String(error)
+                  error instanceof Error ? error.message : String(error),
                 );
               }
             } catch (error) {
@@ -79,8 +81,8 @@ export default function LoginPage() {
           }}
         >
           Log in
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           className="w-full py-2 rounded bg-secondary text-secondary-foreground font-semibold border border-border hover:bg-secondary/80 transition-colors"
           formAction={async (formData: FormData) => {
@@ -90,9 +92,12 @@ export default function LoginPage() {
               ValidatePassword(password);
               try {
                 await signUp(email, password);
+                alert(
+                  "Sign up successful! Please check your email to verify your account.",
+                );
               } catch (error) {
                 setError(
-                  error instanceof Error ? error.message : String(error)
+                  error instanceof Error ? error.message : String(error),
                 );
                 return;
               }
@@ -106,7 +111,7 @@ export default function LoginPage() {
           }}
         >
           Sign up
-        </button>
+        </Button>
         <Link
           href="/auth/forgot"
           className="text-sm text-primary hover:underline mt-4 block text-center"

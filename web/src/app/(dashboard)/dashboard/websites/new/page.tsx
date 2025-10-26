@@ -20,7 +20,7 @@ export default function AddNewWebsitePage() {
   const { user, session } = useAuth();
   const [step, setStep] = useState<number>(1);
   const [verificationToken, setVerificationToken] = useState<string | null>(
-    null
+    null,
   );
   const [domain, setDomain] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export default function AddNewWebsitePage() {
                     domain_name: data.domain_name,
                     owner_id: user.id,
                   }),
-                }
+                },
               )
                 .then(async (res) => {
                   if (res.status !== 200) {
@@ -168,7 +168,7 @@ export default function AddNewWebsitePage() {
 
         if (response.status !== 200) {
           setError(
-            (await response.json()).message || "Error verifying website"
+            (await response.json()).message || "Error verifying website",
           );
         }
 

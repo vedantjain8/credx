@@ -15,7 +15,6 @@ export async function verifyWebsite({ verificationToken }: VerificationData) {
 
   const website = await prisma.websites.findUnique({
     where: {
-      
       verification_token: verificationToken,
     },
   });

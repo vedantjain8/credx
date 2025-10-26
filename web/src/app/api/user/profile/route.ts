@@ -32,11 +32,11 @@ export async function PUT(request: NextRequest) {
     });
     return NextResponse.json(
       { message: "updated user profile" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {}
   return NextResponse.json(
     { message: "updated user profile" },
-    { status: 200 }
+    { status: 200 },
   );
 }

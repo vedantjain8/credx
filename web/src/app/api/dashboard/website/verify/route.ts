@@ -3,11 +3,10 @@ import * as cheerio from "cheerio";
 import { PrismaClient } from "@/generated/prisma";
 import { createClient } from "@/utils/supabase/server";
 
-
 export async function POST(request: NextRequest) {
   try {
     const prisma = new PrismaClient();
-    const supabase =  createClient();
+    const supabase = createClient();
     const body = await request.json();
     const domain = body.domain;
     const userSessionToken = request.headers
@@ -35,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (!domain) {
       return NextResponse.json(
         { message: "Missing domain or token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const response = await fetch(domain!, { method: "GET" });
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (!webToken || webToken !== token.verification_token) {
       return NextResponse.json(
         { message: "Given verification token does not match" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,13 +65,13 @@ export async function POST(request: NextRequest) {
       // Prisma record not found
       return NextResponse.json(
         { message: "Website not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
     console.log("error in verifying website: ", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-      }
+      },
     );
 
     return () => {

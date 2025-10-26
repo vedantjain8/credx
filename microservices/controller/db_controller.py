@@ -1,7 +1,8 @@
-from psycopg2 import connect
-from dotenv import load_dotenv
 import logging
 import os
+
+from dotenv import load_dotenv
+from psycopg2 import connect
 
 # Load environment variables from .env
 load_dotenv()
@@ -46,7 +47,7 @@ def close_connection(connection):
         logger.info("Connection closed.")
 
 
-def execute_query(cursor, query, params, fetch=False) -> any:
+def execute_query(cursor, query, params, fetch=False) -> int|set:
     """
     Executes a given SQL query using the provided database cursor.
 
@@ -57,7 +58,7 @@ def execute_query(cursor, query, params, fetch=False) -> any:
         fetch (bool, optional): If True, fetches and returns a single result from the query. Defaults to False.
 
     Returns:
-        int or Any:
+        int or set:
             - If fetch is False: Returns 200 on success, 500 on failure.
             - If fetch is True: Returns the fetched result on success, 500 on failure.
 

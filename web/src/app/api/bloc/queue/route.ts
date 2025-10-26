@@ -44,6 +44,6 @@ export async function DELETE(request: NextRequest) {
   queue.shift();
   return NextResponse.json(
     { message: "Item removed from queue" },
-    { status: 200 }
+    { status: 200 },
   );
 }

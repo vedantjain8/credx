@@ -29,7 +29,7 @@ export default function UserProfilePage() {
 
   const toggleTag = (tag: string) => {
     setUserPreferences((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
   };
 

@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
-  context: { params: { websiteid: string } }
+  context: { params: { websiteid: string } },
 ) {
   const { websiteid } = await context.params;
 

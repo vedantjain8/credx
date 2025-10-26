@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { promotion_status } from '@/generated/prisma';
+import { promotion_status } from "@/generated/prisma";
 
 //  data needed to create a promotion
 type PromotionData = {
@@ -8,7 +8,6 @@ type PromotionData = {
   status: string;
   owner_id: string;
 };
-
 
 export async function createPromotion({
   content_id,
@@ -26,17 +25,18 @@ export async function createPromotion({
     },
   });
 
- 
   if (!contentItem) {
-    throw new Error("Forbidden: You do not own this content or it does not exist.");
+    throw new Error(
+      "Forbidden: You do not own this content or it does not exist.",
+    );
   }
 
   //  Insert the new record into the 'promotions' table
   const newPromotion = await prisma.promotions.create({
     data: {
       content_id: content_id,
-      budget: budget, 
-      status: (status || 'active') as promotion_status,
+      budget: budget,
+      status: (status || "active") as promotion_status,
     },
   });
 

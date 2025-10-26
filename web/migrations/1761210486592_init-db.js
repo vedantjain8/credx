@@ -32,7 +32,7 @@ export const up = (pgm) => {
       "viewer_bonus",
       "host_payment",
     ],
-    { ifNotExists: true }
+    { ifNotExists: true },
   );
   pgm.createType("user_role", ["promoter", "host", "viewer", "admin"], {
     ifNotExists: true,
@@ -55,7 +55,7 @@ export const up = (pgm) => {
         NEW.updated_at = NOW();
         RETURN NEW;
     END;
-    `
+    `,
   );
 
   // Create tables
@@ -327,7 +327,7 @@ export const up = (pgm) => {
     END IF;
     RETURN NEW;
   END;
-  `
+  `,
   );
   pgm.createTrigger("promotions", "auto_inactivate_trigger", {
     when: "BEFORE",

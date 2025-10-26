@@ -1,0 +1,6 @@
+**/node_modules
+**/.next
+**/generated
+**/dist
+**/build
+**/out

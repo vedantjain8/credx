@@ -3,6 +3,7 @@
 import { useAuth } from "./context/auth";
 import { redirect, useRouter } from "next/navigation";
 import PageLoadSpinner from "./loading";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -25,7 +26,7 @@ export default function Home() {
             right audience and reward engagement seamlessly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
+            <Button
               onClick={() => {
                 if (!user) router.push("/login");
                 if (user) router.push("/dashboard");
@@ -33,7 +34,7 @@ export default function Home() {
               className="bg-primary-foreground text-primary px-8 py-3 rounded-lg font-semibold hover:bg-primary-foreground/90 transition-all duration-300 transform hover:scale-105"
             >
               Join Now
-            </button>
+            </Button>
           </div>
         </div>
         <div className="absolute inset-0 bg-black/10 animate-pulse pointer-events-none"></div>
@@ -225,14 +226,14 @@ export default function Home() {
             Join thousands of promoters and readers in our growing network.
           </p>
 
-          <button
+          <Button
             onClick={() => {
               redirect("/login");
             }}
             className="bg-primary-foreground text-primary px-10 py-4 rounded-lg font-semibold hover:bg-primary-foreground/90 transition-all duration-300 transform hover:scale-105"
           >
             Sign Up Now
-          </button>
+          </Button>
         </div>
       </section>
     </div>

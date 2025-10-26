@@ -1,5 +1,7 @@
 "use client";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { ValidateEmail } from "@/lib/validation/auth";
@@ -7,7 +9,9 @@ import Link from "next/link";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   return (
@@ -18,12 +22,16 @@ export default function ForgotPasswordPage() {
             Reset your password
           </h1>
           <p className="text-muted-foreground mb-6">
-            Enter the email associated with your account and we&apos;ll send a secure link to reset your password.
+            Enter the email associated with your account and we&apos;ll send a
+            secure link to reset your password.
           </p>
 
-          <label htmlFor="email" className="block text-sm font-medium text-card-foreground mb-2">
+          <Label
+            htmlFor="email"
+            className="block text-sm font-medium text-card-foreground mb-2"
+          >
             Email address
-          </label>
+          </Label>
           <Input
             id="email"
             required
@@ -38,7 +46,9 @@ export default function ForgotPasswordPage() {
             className="mb-4 bg-input text-foreground"
           />
 
-          {errorMsg && <p className="text-sm text-destructive mb-4">{errorMsg}</p>}
+          {errorMsg && (
+            <p className="text-sm text-destructive mb-4">{errorMsg}</p>
+          )}
           {status === "success" && (
             <div className="mb-4 rounded-md bg-primary/10 border border-primary/20 p-3 text-sm primary-foreground">
               Password reset email sent. Check your inbox (and spam folder).
@@ -46,7 +56,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 items-center">
-            <button
+            <Button
               onClick={async () => {
                 try {
                   setErrorMsg(null);
@@ -58,9 +68,10 @@ export default function ForgotPasswordPage() {
 
                   setStatus("loading");
                   const supabase = createClient();
-                  const { data, error } = await (supabase).auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/auth/update-password`,
-                  });
+                  const { data, error } =
+                    await supabase.auth.resetPasswordForEmail(email, {
+                      redirectTo: `${window.location.origin}/auth/update-password`,
+                    });
 
                   if (error) {
                     setErrorMsg(error.message || "Failed to send reset email.");
@@ -68,9 +79,13 @@ export default function ForgotPasswordPage() {
                     return;
                   }
 
-                  setStatus("success");
+                  if (data) setStatus("success");
                 } catch (err) {
-                  setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
+                  setErrorMsg(
+                    err instanceof Error
+                      ? err.message
+                      : "Something went wrong.",
+                  );
                   setStatus("error");
                 }
               }}
@@ -82,10 +97,17 @@ export default function ForgotPasswordPage() {
               } disabled:opacity-60`}
               aria-busy={status === "loading"}
             >
-              {status === "loading" ? "Sending..." : status === "success" ? "Sent" : "Send Reset Link"}
-            </button>
+              {status === "loading"
+                ? "Sending..."
+                : status === "success"
+                  ? "Sent"
+                  : "Send Reset Link"}
+            </Button>
 
-            <Link href="/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <Link
+              href="/login"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
               Back to login
             </Link>
           </div>
