@@ -44,10 +44,6 @@ export default function DashboardPage() {
           </Button>
 
           <Button asChild size="lg" variant="outline">
-            <Link href="/dashboard/promotions">Manage Promotions</Link>
-          </Button>
-
-          <Button asChild size="lg" variant="outline">
             <Link href="/dashboard/wallet">View Wallet</Link>
           </Button>
         </div>

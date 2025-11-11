@@ -4,25 +4,31 @@ import { verifyWebsite } from "@/controller/VerifyWebsite";
 
 export async function POST(request: Request) {
   try {
-    const { verificationToken, userId } = await request.json();
+    const { hostToken, userId } = await request.json();
 
     // Basic validation
 
-    if (!verificationToken || !userId) {
+    if (!hostToken || !userId) {
+      console.log(!userId ? "Missing userId" : "Missing hostToken");
       return NextResponse.json(
         { error: "Missing verificationToken or userId" },
-        { status: 400 },
+        { status: 400 }
       );
     }
+    
+    console.log(`Widget request: user=${userId}`);
 
     // Verify the website exists in our database
     // The controller will throw an error if the token is invalid
-    const website = await verifyWebsite({ verificationToken });
-    console.log(
-      `Verified website: ${website.domain_name} (ID: ${website.website_id})`,
-    );
+    // const website = await verifyWebsite({ verificationToken: hostToken });
+    // console.log(
+    //   `Verified website: ${website.domain_name} (ID: ${website.website_id})`
+    // );
 
-    const recommendations = await getAiRecommendations({ userId });
+    const recommendations = await getAiRecommendations({
+      userId,
+      verificationToken: hostToken,
+    });
 
     return NextResponse.json(recommendations, { status: 200 });
   } catch (error) {

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CredX Identity</title>
+</head>
+<body>
+<script>
+  // Get userId from localStorage, default to ROBINHOOD if not found
+  const userId = localStorage.getItem("credx_user_id") || "ROBINHOOD";
+
+  window.addEventListener("message", event => {
+    console.log("[CredX iframe] Received message:", event.data, "from", event.origin);
+    
+    if (event.data.type === "REQUEST_USER_ID") {
+      console.log("[CredX iframe] Sending userId:", userId);
+      window.parent.postMessage(
+        { type: "RESPONSE_USER_ID", userId: userId },
+        event.origin
+      );
+    }
+  });
+</script>
+</body>
+</html>

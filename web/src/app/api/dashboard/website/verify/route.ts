@@ -26,31 +26,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const token = await prisma.websites.findFirstOrThrow({
-      where: { domain_name: domain, owner_id: user.id },
-      select: { verification_token: true },
-    });
-
     if (!domain) {
       return NextResponse.json(
         { message: "Missing domain or token" },
-        { status: 400 },
+        { status: 400 }
       );
     }
-    const response = await fetch(domain!, { method: "GET" });
+
+    // fetch website record (use findFirst and handle not found)
+    const tokenRecord = await prisma.websites.findFirst({
+      where: { domain_name: domain, owner_id: user.id },
+      select: { verification_token: true, website_id: true },
+    });
+
+    if (!tokenRecord) {
+      return NextResponse.json(
+        { message: "Website not found" },
+        { status: 404 }
+      );
+    }
+
+    // normalize domain for fetch (ensure protocol)
+    const fetchUrl =
+      typeof domain === "string" && /^(https?:)\/\//i.test(domain)
+        ? domain
+        : `https://${domain}`;
+
+    const response = await fetch(fetchUrl, { method: "GET" });
     const $ = cheerio.load(await response.text());
     const webToken =
       $("meta[name='credx-verification']").attr("content") || null;
 
-    if (!webToken || webToken !== token.verification_token) {
+    if (!webToken || webToken !== tokenRecord.verification_token) {
       return NextResponse.json(
         { message: "Given verification token does not match" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
+    // update using the primary key to avoid any issues with unique constraints
     await prisma.websites.update({
-      where: { domain_name: domain, owner_id: user.id },
+      where: { website_id: tokenRecord.website_id },
       data: { status: "active", verified_at: new Date() },
     });
 
@@ -65,13 +81,13 @@ export async function POST(request: NextRequest) {
       // Prisma record not found
       return NextResponse.json(
         { message: "Website not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
     console.log("error in verifying website: ", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

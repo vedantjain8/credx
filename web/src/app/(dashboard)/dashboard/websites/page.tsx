@@ -38,7 +38,7 @@ export default function DashboardWebsitesPage() {
   const [article_url, setArticleUrl] = useState<string>("");
   const [budgetValue, setBudgetValue] = useState<number>(0);
   const [selectedWebsiteId, setSelectedWebsiteId] = useState<string | null>(
-    null,
+    null
   );
   const [sendData, setSendData] = useState<QueueItemType | null>(null);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -106,9 +106,9 @@ export default function DashboardWebsitesPage() {
   async function addNewArticle(
     website_id: string,
     article_url: string,
-    budget: number,
+    budget: number
   ) {
-    if (!website_id || !article_url) {
+    if (!website_id || !article_url || !budget) {
       setError("Article URL cannot be empty.");
       return;
     }
@@ -132,7 +132,7 @@ export default function DashboardWebsitesPage() {
         setError(res.message || "Failed to add article to queue.");
       } else {
         alert(
-          "Article successfully added to the promotion queue. Check back later for results.",
+          "Article successfully added to the promotion queue. Check back later for results."
         );
       }
     } catch (error) {
@@ -165,7 +165,7 @@ export default function DashboardWebsitesPage() {
                 onClick={() => handleWebsiteSelect(website.website_id)}
                 className="flex w-full items-center justify-between p-4 text-left"
               >
-                <span className="font-medium text-card-foreground">
+                <span className="font-medium text-card-background">
                   {website.domain_name}
                 </span>
                 <span
@@ -272,7 +272,7 @@ export default function DashboardWebsitesPage() {
                 addNewArticle(
                   sendData!.website_id,
                   sendData!.article_url,
-                  budgetValue,
+                  budgetValue
                 );
                 setShowDialog(false);
               }}

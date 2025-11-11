@@ -6,12 +6,9 @@ Provides the ScraperMod class for robustly scraping, cleaning, and uploading a s
 
 import hashlib
 import logging
-import os
 from typing import Optional
 
-import boto3
 import requests
-from botocore.client import Config
 from bs4 import BeautifulSoup, FeatureNotFound
 from controller.db_controller import execute_query
 from dotenv import load_dotenv
@@ -98,7 +95,7 @@ class ScraperMod:
         Returns:
             bool: True if the website is active, False otherwise.
         """
-        website_status, = execute_query(
+        website_status = execute_query(
             cursor=cursor, query="SELECT status FROM websites WHERE website_id = %s", params=(website_id,), fetch=True)
 
         if website_status == "active":
@@ -140,7 +137,7 @@ class ScraperMod:
             bool: True if budget is sufficient, False otherwise.
         """
         entered_budget = float(entered_budget)
-        wallet_balance, = execute_query(
+        wallet_balance = execute_query(
             cursor=cursor,
             query="SELECT balance FROM wallets WHERE user_id = %s",
             params=(self.promoter_id,), fetch=True)
@@ -209,38 +206,6 @@ class ScraperMod:
         identifier = sha256_hash.hexdigest()
         logger.debug(f"Generated unique identifier for URL: {identifier}")
         return identifier
-
-    def upload_to_s3(self, content: str, bucket: str, object_name: str):
-        """
-        Uploads article content directly to an S3-compatible object store.
-
-        Args:
-            content (str): The article content to upload.
-            bucket (str): The S3 bucket name.
-            object_name (str): The object name (key) in the bucket.
-        """
-        import io
-        endpoint_url = os.getenv('S3_ENDPOINT_URL')
-        access_key = os.getenv('S3_ACCESS_KEY_ID')
-        secret_key = os.getenv('S3_ACCESS_KEY')
-        region = os.getenv("S3_REGION")
-
-        if not all([endpoint_url, access_key, secret_key]):
-            logger.error(
-                "S3 credentials and endpoint URL must be set as environment variables.")
-            return
-
-        s3 = boto3.client('s3', endpoint_url=endpoint_url,
-                          aws_access_key_id=access_key,
-                          aws_secret_access_key=secret_key,
-                          config=Config(region_name=region))
-        try:
-            s3.upload_fileobj(io.BytesIO(
-                content.encode('utf-8')), bucket, object_name)
-            logger.info(
-                f"Successfully uploaded content to {bucket}/{object_name}")
-        except Exception as e:
-            logger.error(f"Failed to upload content to S3. Reason: {e}")
 
     def get_title_image(self, soup: Optional[BeautifulSoup]) -> str:
         """

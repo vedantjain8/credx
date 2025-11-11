@@ -20,7 +20,7 @@ export default function AddNewWebsitePage() {
   const { user, session } = useAuth();
   const [step, setStep] = useState<number>(1);
   const [verificationToken, setVerificationToken] = useState<string | null>(
-    null,
+    null
   );
   const [domain, setDomain] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export default function AddNewWebsitePage() {
                     domain_name: data.domain_name,
                     owner_id: user.id,
                   }),
-                },
+                }
               )
                 .then(async (res) => {
                   if (res.status !== 200) {
@@ -120,7 +120,7 @@ export default function AddNewWebsitePage() {
   const step2 = () => {
     return (
       <div className="space-y-6 p-8 rounded-xl shadow-lg max-w-xl mx-auto bg-card text-card-foreground">
-        Add this code to your website&apos;s layout file to verify ownership:
+        Add this code to your website&apos;s head tag to verify ownership:
         <pre className="p-4 rounded-2xl bg-muted text-muted-foreground overflow-auto">
           {`<meta name="credx-verification" content="${verificationToken}" />`}
         </pre>
@@ -161,6 +161,10 @@ export default function AddNewWebsitePage() {
       timer = setTimeout(async () => {
         const response = await fetch("/api/dashboard/website/verify", {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             domain: domain,
           }),
@@ -168,7 +172,7 @@ export default function AddNewWebsitePage() {
 
         if (response.status !== 200) {
           setError(
-            (await response.json()).message || "Error verifying website",
+            (await response.json()).message || "Error verifying website"
           );
         }
 

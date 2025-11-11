@@ -2,7 +2,8 @@
 import { useAuth } from "@/app/context/auth";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 const availableTags = [
   "Autos and vehicles",
@@ -24,12 +25,85 @@ const availableTags = [
 
 export default function UserProfilePage() {
   const { user, loading, signOut, session } = useAuth();
+
   const router = useRouter();
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
 
+  async function set_preferences_cookie(preferences: string[]) {
+    Cookies.set("user_preferences", JSON.stringify(preferences), {
+      expires: 30,
+    });
+  }
+
+  async function get_preferences_cookie() {
+    const cookie_preferences = Cookies.get("user_preferences");
+    if (cookie_preferences) {
+      return JSON.parse(cookie_preferences);
+    }
+    return null;
+  }
+
+  useEffect(() => {
+    async function fetchUserPreferences() {
+      // fetch from cookies
+      try {
+        const prefs = await get_preferences_cookie();
+        if (prefs) {
+          setUserPreferences(prefs);
+          return;
+        }
+      } catch (err) {
+        console.error(`error at fetching preferences from cookies: ${err}`);
+      }
+
+      // fetch from api when cookies not available
+      try {
+        await fetch("/api/user/profile/preferences", {
+          method: "GET",
+          headers: {
+            Authorization: session!.access_token,
+          },
+        }).then((res) => {
+          if (res.status === 200) {
+            return res.json().then((data) => {
+              setUserPreferences(data.preferences);
+              set_preferences_cookie(data.preferences);
+            });
+          }
+        });
+      } catch (err) {
+        console.error(`error at fetching preferences from api: ${err}`);
+      }
+    }
+
+    fetchUserPreferences();
+  }, [user, session]);
+
+  async function handle_save_preferences() {
+    try {
+      // return boolean
+      return await fetch("/api/user/profile/preferences", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ preferences: userPreferences }),
+      }).then((res) => {
+        if (!res.ok || res.status !== 200) {
+          throw new Error("Failed to update preferences");
+        }
+        set_preferences_cookie(userPreferences);
+        return true;
+      });
+    } catch (err) {
+      console.error(`error at saving preferences: ${err}`);
+    }
+  }
+
   const toggleTag = (tag: string) => {
     setUserPreferences((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
 
@@ -87,27 +161,7 @@ export default function UserProfilePage() {
           <Button
             className="w-full mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
             onClick={async () => {
-              async function save_preferences() {
-                try {
-                  // return boolean
-                  return await fetch("/api/user/profile", {
-                    method: "PUT",
-                    headers: {
-                      Authorization: `Bearer ${session?.access_token}`,
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ preferences: userPreferences }),
-                  }).then((res) => {
-                    if (!res.ok || res.status !== 200) {
-                      throw new Error("Failed to update preferences");
-                    }
-                    return true;
-                  });
-                } catch (err) {
-                  console.error(`error at saving preferences: ${err}`);
-                }
-              }
-              if (await save_preferences()) {
+              if (await handle_save_preferences()) {
                 alert("Preferences saved successfully!");
               } else {
                 alert("Failed to save preferences. Please try again.");

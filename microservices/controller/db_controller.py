@@ -47,36 +47,52 @@ def close_connection(connection):
         logger.info("Connection closed.")
 
 
-def execute_query(cursor, query, params, fetch=False) -> int|set:
+def execute_query(cursor, query, params=None, fetch=False):
     """
-    Executes a given SQL query using the provided database cursor.
+    Execute a SQL query using the provided cursor.
+
+    Behavior:
+    - If fetch is False: executes the query and returns 200 on success or 500 on failure.
+    - If fetch is True: executes the query and returns:
+        - None if no rows were found
+        - a scalar value if the row contains a single column
+        - a tuple for multi-column rows
+
+    This makes it convenient for callers that expect a single column (e.g. verification_token)
+    to receive the raw value directly.
 
     Args:
-        cursor: A database cursor object used to execute the query.
-        query (str): The SQL query to be executed.
-        params (tuple or dict): Parameters to be passed with the SQL query.
-        fetch (bool, optional): If True, fetches and returns a single result from the query. Defaults to False.
+        cursor: psycopg2 cursor
+        query: SQL query string
+        params: optional parameters tuple/dict
+        fetch: whether to fetch a single row
 
     Returns:
-        int or set:
-            - If fetch is False: Returns 200 on success, 500 on failure.
-            - If fetch is True: Returns the fetched result on success, 500 on failure.
-
-    Logs:
-        - Logs an error message if query execution fails.
-        - Logs an info message if query execution succeeds.
+        int|None|tuple|Any: 200/500 for non-fetch calls; for fetch calls returns row or scalar or None.
     """
     try:
-        if params:
+        # Always call execute with params if provided (None is acceptable)
+        if params is not None:
+            logger.debug("Executing query: %s params=%r", query, params)
             cursor.execute(query, params)
-            if fetch:
-                result = cursor.fetchone()
-                return result
         else:
+            logger.debug("Executing query: %s (no params)", query)
             cursor.execute(query)
+
+        if fetch:
+            row = cursor.fetchone()
+            logger.debug("Fetched row: %r", row)
+            if row is None:
+                return None
+            # If the row has exactly one column, return the scalar for convenience
+            if isinstance(row, (list, tuple)) and len(row) == 1:
+                return row[0]
+            return row
+
     except Exception as e:
         logger.error(f"Query execution failed: {e}")
         return 500
+
     else:
         logger.info("Query executed successfully!")
         return 200

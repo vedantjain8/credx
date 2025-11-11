@@ -83,7 +83,6 @@ export const up = (pgm) => {
       onDelete: "CASCADE",
     },
     domain_name: { type: "varchar(255)", notNull: true, unique: true },
-    rss_feed_url: { type: "varchar(2048)" },
     status: {
       type: "website_status",
       notNull: true,
@@ -98,6 +97,10 @@ export const up = (pgm) => {
     verification_token_expires_at: { type: "timestamp with time zone" },
     verified_at: { type: "timestamp with time zone" },
     created_at: {
+      type: "timestamp with time zone",
+      default: pgm.func("NOW()"),
+    },
+    updated_at: {
       type: "timestamp with time zone",
       default: pgm.func("NOW()"),
     },
@@ -129,7 +132,6 @@ export const up = (pgm) => {
       references: "public.users(user_id)",
       onDelete: "CASCADE",
     },
-    s3_path: { type: "varchar(255)" },
     status: { type: "promotion_status", notNull: true, default: "pending" },
     website_id: {
       type: "uuid",
@@ -385,6 +387,8 @@ export const up = (pgm) => {
       FOR EACH ROW
       EXECUTE FUNCTION public.handle_new_user();
 `);
+
+  pgm.insert("public.wallets", { user_id: "admin", balance: 0.0 });
 };
 
 /**
@@ -394,6 +398,7 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
   // Drop triggers
+  pgm.sql(`DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;`);
   pgm.dropTrigger("wallets", "wallets_update_trigger", { ifExists: true });
   pgm.dropTrigger("promotions", "promotions_update_trigger", {
     ifExists: true,

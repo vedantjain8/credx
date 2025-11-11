@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+import sys
 import time
+import traceback
 
 import requests
 from classifier.model_service import classify_text
@@ -16,14 +18,29 @@ from tag_extraction.get_tags import extract_tags
 
 load_dotenv()
 
+RETRY_DELAY = int(os.getenv("RETRY_DELAY", "60"))  # seconds
+
 
 def delete_queue_item():
     delete_response = requests.delete(
-        os.getenv("API_SERVER", "http://localhost:3000") + "/api/bloc/queue")
+        os.getenv("API_SERVER", "http://localhost:3000") + "/api/bloc/queue", timeout=30)
     if delete_response.status_code != 200:
         logging.error(
-            f"Failed to delete queue item: {delete_response.text}")
+            f"Failed to delete queue item: {delete_response.status_code} {delete_response.text}")
     logging.info("Deleted processed queue item")
+
+
+# new helper to validate queue message structure
+def is_valid_queue_item(item):
+    try:
+        return bool(
+            item.get("article_url")
+            and item.get("budget") is not None
+            and item.get("website_id")
+            and item.get("promoter_id")
+        )
+    except AttributeError:
+        return False
 
 
 def main():
@@ -54,20 +71,65 @@ def main():
                     (os.getenv("API_SERVER", "http://localhost:3000")) + "/api/bloc/queue")
                 if response.status_code != 200:
                     logging.error(f"Failed to fetch queue: {response.text}")
-                    time.sleep(30)  # Wait before retrying
+                    time.sleep(RETRY_DELAY)  # Wait before retrying
                     continue
 
-                queue_data = response.json()
+                # Robust parsing of the queue response (handles dict, list, or JSON/string payloads)
+                queue_data_raw = response.json()
+                logging.debug("Raw queue response: %r", queue_data_raw)
+
+                if not queue_data_raw:
+                    logging.info(
+                        "No articles in the queue. Retrying in 30 seconds...")
+                    time.sleep(RETRY_DELAY)
+                    continue
+
+                if isinstance(queue_data_raw, str):
+                    try:
+                        queue_data = json.loads(queue_data_raw)
+                    except json.JSONDecodeError:
+                        # If it's just a plain string (e.g. a URL), wrap it
+                        queue_data = {"message": queue_data_raw}
+                elif isinstance(queue_data_raw, list):
+                    queue_data = queue_data_raw[0] if queue_data_raw else {}
+                elif isinstance(queue_data_raw, dict):
+                    queue_data = queue_data_raw
+                else:
+                    queue_data = {}
+
                 if not queue_data:
                     logging.info(
                         "No articles in the queue. Retrying in 30 seconds...")
-                    time.sleep(30)
+                    time.sleep(RETRY_DELAY)
                     continue
 
                 item = queue_data.get("message")
-                if not item:
-                    logging.error("No message in queue data. Skipping...")
-                    time.sleep(30)
+                logging.debug(
+                    "Normalized queue message before parsing: %r", item)
+                # If the message itself is a JSON string, parse it. If it's a simple string (e.g. URL), normalize it.
+                if isinstance(item, str):
+                    try:
+                        item = json.loads(item)
+                    except json.JSONDecodeError:
+                        # If it's just a URL string, normalize to dict
+                        if item.startswith("http://") or item.startswith("https://"):
+                            item = {"article_url": item}
+                        else:
+                            # fallback: wrap into message field
+                            item = {"message": item}
+                if not isinstance(item, dict):
+                    logging.error(
+                        "Queue message has unexpected format. Skipping and deleting to avoid blocking. Message: %r", item)
+                    delete_queue_item()
+                    time.sleep(RETRY_DELAY)
+                    continue
+
+                # Validate required fields. If incomplete, skip without deleting so the producer can retry/fix it.
+                if not is_valid_queue_item(item):
+                    logging.warning(
+                        "Incomplete queue message; skipping without deleting so it can be retried. Item: %r", item)
+                    # short backoff to avoid spinning
+                    time.sleep(15)
                     continue
 
                 website_id = item.get("website_id")
@@ -79,22 +141,52 @@ def main():
                     logging.error(
                         "Invalid data in queue item. Deleting from queue...")
                     delete_queue_item()
-                    time.sleep(30)
+                    time.sleep(RETRY_DELAY)
                     continue
 
                 logging.info(f"Processing article: {article_url}")
 
                 # Fetch website ID and verification token
-                verification_token = execute_query(cursor=cur, query="""
-                SELECT verification_token FROM websites WHERE website_id = %s
-                """, params=(website_id,), fetch=True)
+                verification_token = execute_query(
+                    cursor=cur,
+                    query="""
+                SELECT verification_token FROM public.websites WHERE website_id = %s
+                """,
+                    params=(str(website_id),),
+                    fetch=True,
+                )
+                # Log raw result and its type for debugging
+                logging.debug(
+                    "Raw verification_token (db) for website_id=%s: %r", website_id, verification_token)
+                print("verification_token is: ", verification_token,
+                      "and website_id is: ", website_id)
+
+                # If execute_query returned the error sentinel, treat as DB error
+                if verification_token == 500:
+                    logging.error(
+                        "Database query failed when fetching verification token for website_id=%s", website_id)
+                    delete_queue_item()
+                    time.sleep(RETRY_DELAY)
+                    continue
                 if not verification_token:
                     logging.error("No verification token provided.")
                     delete_queue_item()
-                    time.sleep(30)
+                    time.sleep(RETRY_DELAY)
                     continue
-                # Assuming single row, single column
-                verification_token = verification_token[0]
+                # Normalize verification_token (handle list/tuple row structures)
+                # Possible shapes: [('token',)], ['token'], ('token',), 'token'
+                if isinstance(verification_token, (list, tuple)) and len(verification_token) > 0:
+                    first = verification_token[0]
+                    if isinstance(first, (list, tuple)) and len(first) > 0:
+                        verification_token = first[0]
+                    else:
+                        verification_token = first
+                # now verification_token should be a string
+                if not isinstance(verification_token, str):
+                    logging.error("Invalid verification token format.")
+                    delete_queue_item()
+                    time.sleep(RETRY_DELAY)
+                    continue
 
                 scraper = ScraperMod(article_url=article_url,
                                      verification_code=verification_token, promoter_id=promoter_id)
@@ -103,29 +195,23 @@ def main():
                 if not soup:
                     logging.error("Failed to fetch article HTML.")
                     delete_queue_item()
-                    time.sleep(30)
+                    time.sleep(RETRY_DELAY)
                     continue
 
                 # If allowed, scrape the article page for title, author, date, content
-                if scraper.website_status(website_id) and scraper.has_credx_verification(soup):
-                    if not scraper.check_budget(entered_budget=budget):
+                if scraper.website_status(website_id=website_id, cursor=cur) and scraper.has_credx_verification(soup):
+                    if not scraper.check_budget(entered_budget=budget, cursor=cur):
                         logging.warning(
                             "Insufficient budget. Skipping article.")
                         delete_queue_item()
-                        time.sleep(30)
+                        time.sleep(RETRY_DELAY)
                         continue
                     content = scraper.scrape_and_clean_article(soup)
                     if not content:
                         logging.warning("Could not extract content.")
                         delete_queue_item()
-                        time.sleep(30)
+                        time.sleep(RETRY_DELAY)
                         continue
-
-                    unique_id = scraper.generate_unique_identifier()
-                    filename = f"{unique_id}.txt"
-                    scraper.upload_to_s3(content=content,
-                                         bucket="credx", object_name=filename)
-                    logging.info(f"Uploaded: {filename}")
 
                     title = content.strip().splitlines()[0]
                     title_image = scraper.get_title_image(soup)
@@ -140,7 +226,8 @@ def main():
                     summary = generate_text(
                         client=gemini_client, prompt=prompt, model="gemini-2.5-flash")
 
-                    impressions = budget * 10
+                    platform_fee = (budget * 5/100)
+                    impressions = (budget - platform_fee) * 10
                     boost = 1.0
 
                     text = f"{title} {summary} {' '.join(tags)}"
@@ -163,20 +250,57 @@ def main():
                             boost, 
                             embedding,
                             promoter_id,
-                            s3_path,
                             status,
                             website_id
                             )
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::vector, %s, %s, %s, %s)
                         RETURNING promotion_id
-                    """, params=(title, title_image, summary, tags, category, article_url, budget, impressions, 
-                                 boost, emb_sql, promoter_id, filename, "active", website_id), fetch=True)
-                    if not promotion_insertion_status or promotion_insertion_status[0] is None:
+                    """, params=(title, title_image, summary, tags, category, article_url, budget, impressions,
+                                 boost, emb_sql, promoter_id, "active", website_id), fetch=True)
+                    # execute_query now returns a scalar for single-column fetches,
+                    # a tuple/list for multi-column rows, None when no row, or 500 on error.
+                    if promotion_insertion_status == 500 or promotion_insertion_status is None:
                         logging.error(
-                            "Failed to insert promotion into the database.")
+                            "Failed to insert promotion into the database. Raw result: %r", promotion_insertion_status)
                         delete_queue_item()
-                        time.sleep(30)
+                        time.sleep(RETRY_DELAY)
                         continue
+
+                    # Normalize to a scalar promotion_id regardless of shape
+                    if isinstance(promotion_insertion_status, (list, tuple)):
+                        promotion_id = promotion_insertion_status[0] if len(
+                            promotion_insertion_status) > 0 else None
+                    else:
+                        promotion_id = promotion_insertion_status
+
+                    if promotion_id is None:
+                        logging.error(
+                            "Failed to obtain promotion_id after insert. Raw result: %r", promotion_insertion_status)
+                        delete_queue_item()
+                        time.sleep(RETRY_DELAY)
+                        continue
+
+                    logging.debug("Inserted promotion_id=%r", promotion_id)
+
+                    # update the promoter wallet balance
+                    wallet_update_status = execute_query(cursor=cur, query="""
+                        UPDATE wallets
+                        SET balance = balance - %s
+                        WHERE user_id = %s
+                    """, params=(budget, promoter_id), fetch=False)
+                    if wallet_update_status == 500:
+                        logging.error(
+                            "Failed to update promoter wallet for user_id=%s", promoter_id)
+
+                    # take the platform fee and update admin wallet
+                    platform_fee_status = execute_query(cursor=cur, query="""
+                        UPDATE wallets
+                        SET balance = balance + %s
+                        WHERE user_id = %s
+                    """, params=(platform_fee, "admin"), fetch=False)
+                    if platform_fee_status == 500:
+                        logging.error(
+                            "Failed to update admin wallet with platform fee of credit = %s.", platform_fee)
 
                     logging.info(
                         "Successfully processed and stored article")
@@ -197,14 +321,19 @@ def main():
                 logging.error(f"Request error: {re}")
                 delete_queue_item()
             except Exception as e:
+                print("\n--- Detailed Error Traceback ---")
+                traceback.print_exc(file=sys.stdout)
+                print("------------------------------\n")
                 logging.error(f"An error occurred during processing: {e}")
                 delete_queue_item()
 
             # Wait for 30 seconds before checking the queue again
-            time.sleep(30)
+            time.sleep(RETRY_DELAY)
 
     except Exception as e:
         logging.critical(f"An unexpected error occurred: {e}")
+    except KeyboardInterrupt:
+        logging.info("Execution interrupted by user.")
     finally:
         if db_connection:
             close_connection(db_connection)

@@ -10,7 +10,7 @@ export default function ConfirmPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold">OTP Verified Successfully!</h1>
           <p className="text-sm text-gray-500">
-            You can now proceed to the next step.
+            You can now close this window and return to the application.
           </p>
         </div>
       ) : (

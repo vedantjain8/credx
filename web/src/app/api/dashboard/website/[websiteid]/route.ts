@@ -10,7 +10,7 @@ export async function GET(
   const { websiteid } = await context.params;
 
   //   get website's articles from supabase
-  const articles = await prisma.content_items.findMany({
+  const articles = await prisma.promotions.findMany({
     take: 10,
     where: { website_id: websiteid },
   });

@@ -10,6 +10,7 @@ import React, {
 import { createClient } from "@/utils/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { ValidateEmail, ValidatePassword } from "@/lib/validation/auth";
+import Cookies from "js-cookie";
 
 interface AuthContextType {
   user: User | null;
@@ -29,11 +30,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const supabase = createClient(); // ✅ no await here
 
+  function setAuthCookie(userId: string) {
+    // Check if running on localhost
+    const isLocalhost = window.location.hostname === "localhost";
+
+    Cookies.set("create_user_id", userId, {
+      path: "/",
+      sameSite: "None",
+      secure: !isLocalhost,
+    });
+  }
+
+  function removeAuthCookie() {
+    Cookies.remove("create_user_id", { path: "/" });
+  }
+
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession();
       setSession(data.session);
       setUser(data.session?.user ?? null);
+      if (data.session?.user) {
+        localStorage.setItem("credx_user_id", data.session.user.id);
+        setAuthCookie(data.session.user.id);
+      } else {
+        localStorage.removeItem("credx_user_id");
+        removeAuthCookie();
+      }
       setLoading(false);
     };
 
@@ -43,7 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-      },
+        if (session?.user) {
+          localStorage.setItem("credx_user_id", session.user.id);
+          setAuthCookie(session.user.id);
+        } else {
+          localStorage.removeItem("credx_user_id");
+          removeAuthCookie();
+        }
+      }
     );
 
     return () => {

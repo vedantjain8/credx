@@ -12,10 +12,19 @@ const queue = [] as Array<QueueItemType>;
 export async function POST(request: NextRequest) {
   // add item to queue
   const { website_id, article_url, budget, promoter_id } = await request.json();
-  if (!website_id || !article_url || !budget || !promoter_id) {
-    return new NextResponse(JSON.stringify({ message: "Missing parameters" }), {
-      status: 400,
-    });
+  const missingParams = [];
+  if (!website_id) missingParams.push("website_id");
+  if (!article_url) missingParams.push("article_url");
+  if (!budget) missingParams.push("budget");
+  if (!promoter_id) missingParams.push("promoter_id");
+
+  if (missingParams.length > 0) {
+    return new NextResponse(
+      JSON.stringify({
+        message: `Missing parameters: ${missingParams.join(", ")}`,
+      }),
+      { status: 400 }
+    );
   }
 
   queue.push({ website_id, article_url, budget, promoter_id });
@@ -44,6 +53,6 @@ export async function DELETE(request: NextRequest) {
   queue.shift();
   return NextResponse.json(
     { message: "Item removed from queue" },
-    { status: 200 },
+    { status: 200 }
   );
 }
