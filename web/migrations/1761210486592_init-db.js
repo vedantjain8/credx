@@ -32,7 +32,7 @@ export const up = (pgm) => {
       "viewer_bonus",
       "host_payment",
     ],
-    { ifNotExists: true },
+    { ifNotExists: true }
   );
   pgm.createType("user_role", ["promoter", "host", "viewer", "admin"], {
     ifNotExists: true,
@@ -55,7 +55,7 @@ export const up = (pgm) => {
         NEW.updated_at = NOW();
         RETURN NEW;
     END;
-    `,
+    `
   );
 
   // Create tables
@@ -329,7 +329,7 @@ export const up = (pgm) => {
     END IF;
     RETURN NEW;
   END;
-  `,
+  `
   );
   pgm.createTrigger("promotions", "auto_inactivate_trigger", {
     when: "BEFORE",
@@ -388,7 +388,17 @@ export const up = (pgm) => {
       EXECUTE FUNCTION public.handle_new_user();
 `);
 
-  pgm.insert("public.wallets", { user_id: "admin", balance: 0.0 });
+  pgm.insert("public.users", {
+    user_id: "a1b2c3d4-e5f6-5432-1098-76543210abcd",
+    role: "admin",
+    updated_at: pgm.func("NOW()"),
+  });
+
+  pgm.insert("public.wallets", {
+    wallet_id: "a1b2c3d4-e5f6-5432-1098-76543210abcd",
+    user_id: "a1b2c3d4-e5f6-5432-1098-76543210abcd",
+    balance: 0.0,
+  });
 };
 
 /**

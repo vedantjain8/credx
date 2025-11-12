@@ -1,10 +1,8 @@
-//RETURNS WALLET DATA
-
 import { NextResponse } from "next/server";
 import GetWalletData from "@/controller/ViewWallet";
 import AuthenticateUser from "@/controller/AuthenticateUser";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const user = await AuthenticateUser();
     const walletData = await GetWalletData(user.id);

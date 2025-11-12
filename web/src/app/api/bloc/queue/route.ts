@@ -9,9 +9,9 @@ type QueueItemType = {
 
 const queue = [] as Array<QueueItemType>;
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   // add item to queue
-  const { website_id, article_url, budget, promoter_id } = await request.json();
+  const { website_id, article_url, budget, promoter_id } = await _request.json();
   const missingParams = [];
   if (!website_id) missingParams.push("website_id");
   if (!article_url) missingParams.push("article_url");
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ message: "Item added to queue" }, { status: 200 });
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // get the first item in queue
   if (queue.length === 0) {
     return new NextResponse(JSON.stringify({ message: "Queue is empty" }), {
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ message: queue[0] }, { status: 200 });
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   // remove item from queue
   if (queue.length === 0) {
     return new NextResponse(JSON.stringify({ message: "Queue is empty" }), {

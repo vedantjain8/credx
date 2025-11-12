@@ -75,14 +75,37 @@
     if (slot && data) {
       slot.innerHTML = `
         <div class="credx-ad-card" style="border:1px solid #ddd; border-radius:8px; padding:16px; max-width:350px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-          <a href="${data.url}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
-            ${data.image ? `<img src="${data.image}" alt="${data.title}" style="width:100%; border-radius:6px; margin-bottom:12px;">` : ""}
-            <h3 style="font-size:1.1rem; margin:0 0 8px 0; color:#333;">${data.title}</h3>
-            <p style="font-size:0.95rem; color:#666; margin:0;">${data.description}</p>
+          <a href="${data.url}" target="_blank" rel="noopener" class="credx-ad-link" style="text-decoration:none; color:inherit;">
+        ${data.image ? `<img src="${data.image}" alt="${data.title}" style="width:100%; border-radius:6px; margin-bottom:12px;">` : ""}
+        <h3 style="font-size:1.1rem; margin:0 0 8px 0; color:#333;">${data.title}</h3>
+        <p style="font-size:0.95rem; color:#666; margin:0;">${data.description}</p>
           </a>
-          <a href="https://credx.com">Sponsored by CredX</a>
+          <a href="${CREDX_ORIGIN}">Sponsored by CredX</a>
         </div>
       `;
+
+      // report clicks to credx.com/api/widget/click
+      const adLink = slot.querySelector('.credx-ad-link');
+      if (adLink) {
+        adLink.addEventListener('click', function () {
+          try {
+        fetch(`${CREDX_ORIGIN}/api/widget/click`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userId,
+            hostToken: hostToken,
+            promotion_id: data.id,
+          }),
+          keepalive: true,
+        }).catch((err) =>
+          console.error('CredX click fetch error:', err)
+        );
+          } catch (err) {
+        console.error('CredX click handler error:', err);
+          }
+        });
+      }
     } else if (slot) {
       slot.innerHTML = "<p>No ads available</p>";
     }

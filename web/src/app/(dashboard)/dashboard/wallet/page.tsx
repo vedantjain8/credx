@@ -9,9 +9,17 @@ export default function WalletPage() {
   const { user, session, loading: isAuthLoading } = useAuth();
 
   // State to hold the wallet data fetched from the API
+  type WalletTransaction = {
+    transaction_id: string;
+    created_at: string;
+    transaction_type: string;
+    description?: string | null;
+    amount: string | number;
+  };
+
   const [walletData, setWalletData] = useState<{
     balance: number;
-    transactions: any[];
+    transactions: WalletTransaction[];
   }>({
     balance: 0,
     transactions: [],
@@ -149,7 +157,7 @@ export default function WalletPage() {
                             <td className="whitespace-nowrap px-6 py-4 text-sm">
                               <span
                                 className={`rounded-full px-2 py-1 text-xs font-semibold leading-5 ${
-                                  parseFloat(transaction.amount) > 0
+                                  parseFloat(transaction.amount.toString()) > 0
                                     ? "bg-green-900/50 text-green-300"
                                     : "bg-red-900/50 text-red-300"
                                 }`}
@@ -164,14 +172,14 @@ export default function WalletPage() {
                             </td>
                             <td
                               className={`whitespace-nowrap px-6 py-4 text-sm font-medium ${
-                                parseFloat(transaction.amount) > 0
+                                parseFloat(String(transaction.amount)) > 0
                                   ? "text-green-400"
                                   : "text-red-400"
                               }`}
                             >
-                              {parseFloat(transaction.amount) > 0
-                                ? `+${parseFloat(transaction.amount).toFixed(2)}`
-                                : parseFloat(transaction.amount).toFixed(2)}
+                              {parseFloat(transaction.amount.toString()) > 0
+                                ? `+${parseFloat(String(transaction.amount)).toFixed(2)}`
+                                : parseFloat(String(transaction.amount)).toFixed(2)}
                             </td>
                           </tr>
                         ))}

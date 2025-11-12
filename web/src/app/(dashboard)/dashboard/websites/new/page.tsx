@@ -72,7 +72,7 @@ export default function AddNewWebsitePage() {
                 }
               )
                 .then(async (res) => {
-                  if (res.status !== 200) {
+                  if (res.status !== 201) {
                     const errorMsg =
                       (await res.json()).message || res.statusText;
 
@@ -170,14 +170,14 @@ export default function AddNewWebsitePage() {
           }),
         });
 
-        if (response.status !== 200) {
+        if (response.status === 403) {
+          setError("Verification token does not match. Please try again.");
+        } else if (response.status === 200) {
+          redirect("/dashboard/websites");
+        } else {
           setError(
             (await response.json()).message || "Error verifying website"
           );
-        }
-
-        if (response.status === 200) {
-          redirect("/dashboard/websites");
         }
       }, 5000);
     }
@@ -187,7 +187,7 @@ export default function AddNewWebsitePage() {
         clearTimeout(timer);
       }
     };
-  }, [step, domain, user]);
+  }, [step, domain, user, session?.access_token]);
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col items-center justify-center p-6">

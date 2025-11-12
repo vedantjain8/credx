@@ -18,9 +18,10 @@ export async function POST(request: NextRequest) {
       },
     }); // returns complete record in map
 
+    // Resource created
     return NextResponse.json(
       { verification_token: response.verification_token },
-      { status: 200 },
+      { status: 201 },
     );
   } catch (error: unknown) {
     if (

@@ -283,24 +283,39 @@ def main():
                     logging.debug("Inserted promotion_id=%r", promotion_id)
 
                     # update the promoter wallet balance
-                    wallet_update_status = execute_query(cursor=cur, query="""
+                    promoter_wallet_update = execute_query(cursor=cur, query="""
                         UPDATE wallets
                         SET balance = balance - %s
                         WHERE user_id = %s
-                    """, params=(budget, promoter_id), fetch=False)
-                    if wallet_update_status == 500:
+                        returning wallet_id
+                    """, params=(budget, promoter_id), fetch=True)
+                    if promoter_wallet_update == 500:
                         logging.error(
                             "Failed to update promoter wallet for user_id=%s", promoter_id)
+                    logging.debug("Promoter wallet update result: %r",
+                                  promoter_wallet_update)
 
                     # take the platform fee and update admin wallet
                     platform_fee_status = execute_query(cursor=cur, query="""
                         UPDATE wallets
                         SET balance = balance + %s
                         WHERE user_id = %s
-                    """, params=(platform_fee, "admin"), fetch=False)
+                    """, params=(budget, "a1b2c3d4-e5f6-5432-1098-76543210abcd"), fetch=False)
                     if platform_fee_status == 500:
                         logging.error(
                             "Failed to update admin wallet with platform fee of credit = %s.", platform_fee)
+
+                    # add transaction log entry for platform fee
+                    transaction_log_status = execute_query(cursor=cur, query=""" 
+                    INSERT INTO transactions (from_wallet_id, to_wallet_id, amount, transaction_type) 
+                    VALUES ( %s, %s, %s, %s )
+                    """, params=(promoter_wallet_update,
+                                 "a1b2c3d4-e5f6-5432-1098-76543210abcd",
+                                 platform_fee, "platform_fee"),
+                        fetch=False)
+                    if transaction_log_status == 500:
+                        logging.error(
+                            "Failed to log transaction for platform fee of credit = %s.", platform_fee)
 
                     logging.info(
                         "Successfully processed and stored article")

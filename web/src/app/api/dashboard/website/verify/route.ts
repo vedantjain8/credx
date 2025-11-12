@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     if (!webToken || webToken !== tokenRecord.verification_token) {
       return NextResponse.json(
         { message: "Given verification token does not match" },
-        { status: 400 }
+        { status: 403 }
       );
     }
 

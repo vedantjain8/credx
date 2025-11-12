@@ -73,9 +73,11 @@ export async function PUT(request: NextRequest) {
       { message: "updated user profile" },
       { status: 200 }
     );
-  } catch (error) {}
-  return NextResponse.json(
-    { message: "updated user profile" },
-    { status: 200 }
-  );
+  } catch (error) {
+    console.error("Error updating user preferences:", error);
+    return NextResponse.json(
+      { message: "Error updating user preferences" },
+      { status: 500 }
+    );
+  }
 }
