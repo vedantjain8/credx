@@ -15,6 +15,16 @@ type ArticleModel = {
   categories?: string | null;
 };
 
+type PromotionRow = {
+  promotion_id: number | string;
+  title: string;
+  summary?: string | null;
+  image_url?: string | null;
+  article_url: string;
+  tags?: string[];
+  categories?: string | null;
+};
+
 const prisma = new PrismaClient();
 
 /**
@@ -77,7 +87,7 @@ export async function getAiRecommendations({
   // If no preferences found, fall back to best promotions by boost
   if (!prefs || !prefs.interests || prefs.interests.length === 0) {
     // SQL (no preferences)
-    const row: any | null = await prisma.promotions.findFirst({
+    const row = (await prisma.promotions.findFirst({
       where: { status: "active" },
       orderBy: { boost: "desc" },
       select: {
@@ -89,7 +99,7 @@ export async function getAiRecommendations({
         tags: true,
         categories: true,
       },
-    });
+    })) as PromotionRow | null;
 
     if (!row) return null;
 
@@ -154,18 +164,22 @@ export async function getAiRecommendations({
           LIMIT ${LIMIT}`;
 
         // SQL (vector similarity)
-        const rows: any[] = await prisma.$queryRawUnsafe(q);
+        const rows = (await prisma.$queryRawUnsafe(q)) as Array<
+          Record<string, unknown>
+        >;
 
         if (rows && rows.length > 0) {
-          const r = rows[0];
+          const r = rows[0] as Record<string, unknown>;
           return {
-            id: r.id,
-            title: r.title,
-            url: r.url,
-            image: r.image || null,
-            description: r.description || null,
-            tags: r.tags || [],
-            categories: r.categories || null,
+            id: (r.id ?? null) as number | string,
+            title: (r.title ?? "") as string,
+            url: (r.url ?? "") as string,
+            image: (r.image ?? null) as string | null,
+            description: (r.description ?? null) as string | null,
+            tags: (Array.isArray(r.tags)
+              ? (r.tags as string[])
+              : []) as string[],
+            categories: (r.categories ?? null) as string | null,
           };
         }
       }
@@ -190,18 +204,20 @@ export async function getAiRecommendations({
   `;
 
   // SQL (tag/category fallback)
-  const fallbackRows: any[] = await prisma.$queryRawUnsafe(fallbackQ);
+  const fallbackRows = (await prisma.$queryRawUnsafe(fallbackQ)) as Array<
+    Record<string, unknown>
+  >;
 
   if (!fallbackRows || fallbackRows.length === 0) return null;
 
-  const fr = fallbackRows[0];
+  const fr = fallbackRows[0] as Record<string, unknown>;
   return {
-    id: fr.id,
-    title: fr.title,
-    url: fr.url,
-    image: fr.image || null,
-    description: fr.description || null,
-    tags: fr.tags || [],
-    categories: fr.categories || null,
+    id: (fr.id ?? null) as number | string,
+    title: (fr.title ?? "") as string,
+    url: (fr.url ?? "") as string,
+    image: (fr.image ?? null) as string | null,
+    description: (fr.description ?? null) as string | null,
+    tags: (Array.isArray(fr.tags) ? (fr.tags as string[]) : []) as string[],
+    categories: (fr.categories ?? null) as string | null,
   };
 }

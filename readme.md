@@ -1,26 +1,92 @@
-# credX
+# CredX — Publisher Revenue and Recommendation Platform
 
-coding in progress
+CredX is a monolithic repository containing a production-grade Next.js web application and a set of Python microservices for content scraping, classification and promotion workflows. This repository is structured so the web frontend and backend microservices can be developed and deployed together or independently.
 
-![image by pixeljeff on www.deviantart.com](https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/c83c004e-1370-4756-88e5-4071de797088/dgdq8br-09cc7ad6-a021-47a5-b0e0-917b12b0f7a7.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2M4M2MwMDRlLTEzNzAtNDc1Ni04OGU1LTQwNzFkZTc5NzA4OFwvZGdkcThici0wOWNjN2FkNi1hMDIxLTQ3YTUtYjBlMC05MTdiMTJiMGY3YTcuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.tqRMtE-b2QiI2nnefNxSDMJvZCcYqFmq2ccg_Xfzqb8)
+Quick links
+- Web app: `web/` (Next.js)
+- Microservices: `microservices/` (Python)
+- Database migrations: `web/migrations/` (node-pg-migrate)
 
-# Contributing
+## Highlights
 
-Follow below steps to setup development environment:
+- Modern Next.js frontend (App Router) with Prisma client for data access.
+- Postgres-backed database and pgvector support for embeddings.
+- Python microservices: classifier, scraper, controller providing embedding, classification, scraping and queue-based workflows.
+- Node-driven SQL migrations (`node-pg-migrate`) for DB schema management.
+- Designed for extensibility: swap embedding providers, add promotion strategies, or scale microservices independently.
+
+## Screenshots
+![Homepage screenshot](./.github/screenshots/homepage.png)
+![Manage website and article page screenshot](./.github/screenshots/manage_page.jpeg)
+![what the ad will look on other webpage screenshot](./.github/screenshots/on_host_webpage.jpeg)
+
+## Quick start (development)
+
+Prerequisites:
+- Node.js (18+) and npm
+- Python 3.10+ and virtualenv
+- PostgreSQL (local or remote)
+
+1. Web app (frontend)
 
 ```bash
-git clone https://github.com/vedantjain8/credx.git
-cd credx/web
-# -- Rename .env.example to .env --
-# -- Edit .env file to add required credentials --
+cd web
 npm install
-npm run migrate up
+# create .env (see web/README.md for keys)
+cp .example.env .env
+npm run dev
+# open http://localhost:3000
+```
+
+1. Microservices 
+
+```bash
+cd microservices
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+# copy .env and set keys
+cp .example.env .env
+python main.py
+```
+
+4. Database migrations
+
+```bash
+cd web
+# run migrations (node-pg-migrate reads DATABASE_URL)
+npm run migrate -- up
+
+# optionally, pull and generate Prisma client
 npx prisma db pull
 npx prisma generate
-npm run dev
-
-cd ../microservices
-# -- Rename .env.example to .env --
-# -- Edit .env file to add required credentials --
-pip install -r requirements.txt
 ```
+
+See `web/README.md` and `microservices/readme.md` for detailed per-project instructions.
+
+## Architecture overview
+
+- Frontend: Next.js (React) — UI, pages, and API routes.
+- Database: PostgreSQL (+ pgvector extension for vectors).
+- Microservices: Python processes handling scraping, classification, tagging, and embedding. They talk to the web API and DB where appropriate.
+- Migrations: `node-pg-migrate` manages SQL migrations in `web/migrations/`.
+
+## Contributing
+
+1. Fork and branch
+2. Make changes and add tests where appropriate
+3. Open a pull request describing your changes
+
+## Where to find things
+
+- Web app source: `web/src/`
+- Prisma schema: `web/prisma/schema.prisma`
+- Web migrations: `web/migrations/`
+- Microservices: `microservices/`
+
+## 🚀 **Connect With Me**
+
+- **GitHub:** [@vedantjain8](https://github.com/vedantjain8)
+- **LinkedIn:** [vedantjain8](https://www.linkedin.com/in/vedantjain8/)
+
+This project is licensed under the [GNU General Public License v3.0](https://github.com/vedantjain8/credx/blob/main/LICENSE)

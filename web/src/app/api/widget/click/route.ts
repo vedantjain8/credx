@@ -7,7 +7,8 @@ export async function POST(request: NextRequest) {
   // handle the click tracking here
 
   // get userid, useragent, ip address from request
-  let { hostToken, userId, promotion_id } = await request.json();
+  const { hostToken, promotion_id } = await request.json();
+  let { userId } = await request.json();
   const ipAddress =
     request.headers.get("x-forwarded-for") ||
     request.headers.get("cf-connecting-ip") ||

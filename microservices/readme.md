@@ -70,3 +70,46 @@ Nonprofits and activism       0.79      1.00      0.88        15
               macro avg       0.93      0.92      0.92       234
            weighted avg       0.93      0.93      0.92       234
 ```
+
+---
+
+## How to run (development)
+
+1. Create and activate a Python virtual environment (recommended):
+```bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+```
+2. Install dependencies:
+```bash
+  pip install -r requirements.txt
+```
+3. Copy the example env and set any required values:
+```bash
+  cp .example.env .env
+  # edit .env as needed (Gemini/DB keys, etc.)
+```
+4. Run the microservice main process (developer mode):
+```bash
+  python main.py
+```
+
+## Environment variables
+
+The microservices rely on a few environment variables. Keep secrets out of source control.
+| Environment Variable | Description |
+|---|---|
+| DB_USER | Database username |
+| DB_PASSWORD | Database password (keep secret) |
+| DB_HOST | Database host (e.g., `localhost`) |
+| DB_PORT | Database port (e.g., `5432`) |
+| DB_NAME | Database name |
+| DB_CONNECTION_STRING | Optional full Postgres URI (e.g., `postgres://user:pass@host:port/dbname`). Overrides individual `DB_*` values if set |
+| GEMINI_API_KEY | API key for Gemini (summarization/embeddings) |
+| API_SERVER | Base URL of the API server (e.g., `https://api.example.com`) |
+
+## Development & testing
+
+- `classifier/train.py` can be used to train/evaluate the classifier locally with the dataset in `classifier/data/train.csv`.
+- `test.py` contains some small smoke tests used during development.
+- Logs are printed to stdout. Use `python main.py` and inspect console output while running in dev mode.

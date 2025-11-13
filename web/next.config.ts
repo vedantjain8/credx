@@ -4,7 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   allowedDevOrigins: [
     "http://localhost:3000",
-  "*.tunnelmole.net"],
+    "*.tunnelmole.net",
+    "*.vercel.app",
+  ],
 };
 
 export default nextConfig;

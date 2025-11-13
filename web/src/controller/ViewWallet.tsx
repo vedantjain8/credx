@@ -16,6 +16,14 @@ export default async function GetWalletData(user_id: string) {
   }
 
   const transactions = await prisma.transactions.findMany({
+    select: {
+      transaction_id: true,
+      created_at: true,
+      transaction_type: true,
+      amount: true,
+      from_wallet_id: true,
+      to_wallet_id: true,
+    },
     where: {
       OR: [
         { from_wallet_id: wallet.wallet_id },
@@ -29,8 +37,22 @@ export default async function GetWalletData(user_id: string) {
   });
 
   const responseData = {
-    balance: wallet.balance,
-    transactions: transactions,
+    balance: String(wallet.balance),
+    transactions: transactions.map((t) => {
+      const fromId = t.from_wallet_id ?? null;
+      const toId = t.to_wallet_id ?? null;
+      const amtStr = String(t.amount);
+
+      // If this wallet is the sender, show negative amount. Otherwise show positive.
+      const signedAmount = fromId === wallet.wallet_id && toId !== wallet.wallet_id ? `-${amtStr}` : amtStr;
+
+      return {
+        transaction_id: String(t.transaction_id),
+        created_at: t.created_at ? t.created_at.toISOString() : null,
+        transaction_type: t.transaction_type,
+        amount: signedAmount,
+      };
+    }),
   };
 
   return responseData;

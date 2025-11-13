@@ -13,7 +13,6 @@ export default function WalletPage() {
     transaction_id: string;
     created_at: string;
     transaction_type: string;
-    description?: string | null;
     amount: string | number;
   };
 
@@ -37,7 +36,13 @@ export default function WalletPage() {
       try {
         setLoading(true);
         // The API route uses server-side cookies, so the Authorization header is not needed.
-        const response = await fetch("/api/dashboard/wallet");
+        const response = await fetch("/api/dashboard/wallet", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch wallet data.");
@@ -52,7 +57,7 @@ export default function WalletPage() {
         setError(null);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "An unknown error occurred.",
+          err instanceof Error ? err.message : "An unknown error occurred."
         );
       } finally {
         setLoading(false);
@@ -131,12 +136,7 @@ export default function WalletPage() {
                         >
                           Type
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400"
-                        >
-                          Description
-                        </th>
+
                         <th
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-400"
@@ -151,7 +151,7 @@ export default function WalletPage() {
                           <tr key={transaction.transaction_id}>
                             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-300">
                               {new Date(
-                                transaction.created_at,
+                                transaction.created_at
                               ).toLocaleDateString()}
                             </td>
                             <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -167,9 +167,6 @@ export default function WalletPage() {
                                   .toUpperCase()}
                               </span>
                             </td>
-                            <td className="whitespace-nowrap px-6 py-4 text-sm text-white">
-                              {transaction.description || "N/A"}
-                            </td>
                             <td
                               className={`whitespace-nowrap px-6 py-4 text-sm font-medium ${
                                 parseFloat(String(transaction.amount)) > 0
@@ -178,8 +175,12 @@ export default function WalletPage() {
                               }`}
                             >
                               {parseFloat(transaction.amount.toString()) > 0
-                                ? `+${parseFloat(String(transaction.amount)).toFixed(2)}`
-                                : parseFloat(String(transaction.amount)).toFixed(2)}
+                                ? `+${parseFloat(
+                                    String(transaction.amount)
+                                  ).toFixed(2)}`
+                                : parseFloat(
+                                    String(transaction.amount)
+                                  ).toFixed(2)}
                             </td>
                           </tr>
                         ))}

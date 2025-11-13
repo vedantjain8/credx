@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAiRecommendations } from "@/controller/GetAiRecommendations";
-import { verifyWebsite } from "@/controller/VerifyWebsite";
+// import { verifyWebsite } from "@/controller/VerifyWebsite";
 
 export async function POST(request: Request) {
   try {
