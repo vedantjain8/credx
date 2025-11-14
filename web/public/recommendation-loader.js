@@ -1,5 +1,5 @@
 (async function () {
-  const CREDX_ORIGIN = "http://localhost:3000";
+  const CREDX_ORIGIN = "https://credx-network.vercel.app"
 
   const hostTokenMeta = document.querySelector(
     'meta[name="site-verification"]'
