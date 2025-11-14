@@ -67,7 +67,7 @@ export default function ContactPage() {
           <div className="p-4 rounded bg-muted">
             <p className="text-card-foreground">Thank you — message recorded.</p>
             <p className="text-sm text-muted-foreground mt-2">
-              This form doesn't post to a backend yet. The data remains on the
+              This form doesn&apos;t post to a backend yet. The data remains on the
               client during this demo.
             </p>
           </div>

@@ -4,7 +4,7 @@ export default function CareersPage() {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold text-card-foreground mb-4">Careers</h1>
         <p className="text-base text-muted-foreground mb-6">
-          While we're always happy to hear from interested contributors, the
+          While we&apos;re always happy to hear from interested contributors, the
           following profiles represent the current developers of this
           project. You can view their work and reach out via GitHub.
         </p>
