@@ -11,6 +11,7 @@ Add a `.env` file at the project root (or use `.example.env`). Below are the com
 | `GEMINI_EMBED_MODEL` | Gemini embedding model name | `text-embedding-004` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase public URL, if used | `https://xyz.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key for client SDK | `anon-key` |
+| `SITE_URL` | Base URL of the site (used for sitemap generation) | `https://your.domain.com` |
 
 
 ## Scripts 
